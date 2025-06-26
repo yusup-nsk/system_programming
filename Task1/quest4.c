@@ -11,7 +11,7 @@ int main() {
   if (scanf("%d%hhu", &num, &insertion) == 2 && (num > 0)) {
     OutputBitsOfInt(num);
     putchar('\n');
-    int mask = 0b11111111 << (BYTE_INDEX * 8);
+    int mask = 0xFF << (BYTE_INDEX * 8);
     mask = ~mask;
     num = num & mask;
     mask = insertion << (BYTE_INDEX * 8);

@@ -9,7 +9,7 @@ void OutputBitsOfUnsignedChar(unsigned char uch) {
 
 void OutputBitsOfInt(int num) {
   for (int byte = 3; byte >= 0; --byte) {
-    unsigned int uint = (num & (0b11111111 << 8 * byte)) >> 8 * byte;
+    unsigned int uint = (num & (0xFF << 8 * byte)) >> 8 * byte;
     unsigned char uch = uint;
     OutputBitsOfUnsignedChar(uch);
     putchar('`');

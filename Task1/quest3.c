@@ -28,8 +28,8 @@ int CountUnitBitsOfUnsignedChar(unsigned char unsigned_char) {
 int CountUnitBitsOfInt(int num) {
   int sum = 0;
   for (int byte = 3; byte >= 0; --byte) {
-    unsigned int unsigned_int = (num & (0b11111111 << 8 * byte)) >> 8 * byte;
-    unsigned char unsigned_char = unsigned_int & 0b11111111;
+    unsigned int unsigned_int = (num & (0xFF << 8 * byte))  >> 8 * byte;
+    unsigned char unsigned_char = unsigned_int & 0xFF;
     sum += CountUnitBitsOfUnsignedChar(unsigned_char);
   }
   return sum;
