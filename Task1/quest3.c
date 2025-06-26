@@ -15,12 +15,12 @@ int main() {
   return 0;
 }
 
-int CountUnitBitsOfUnsignedChar(unsigned char uch) {
-  unsigned char mask_uc;
+int CountUnitBitsOfUnsignedChar(unsigned char unsigned_char) {
+  unsigned char mask;
   int sum = 0;
   for (int i = 7; i >= 0; --i) {
-    mask_uc = 1 << i;
-    sum += (uch & mask_uc) >> i;
+    mask = 1 << i;
+    sum += (unsigned_char & mask) >> i;
   }
   return sum;
 }
@@ -28,9 +28,9 @@ int CountUnitBitsOfUnsignedChar(unsigned char uch) {
 int CountUnitBitsOfInt(int num) {
   int sum = 0;
   for (int byte = 3; byte >= 0; --byte) {
-    unsigned int uint = (num & (0b11111111 << 8 * byte)) >> 8 * byte;
-    unsigned char uch = uint & 0b11111111;
-    sum += CountUnitBitsOfUnsignedChar(uch);
+    unsigned int unsigned_int = (num & (0b11111111 << 8 * byte)) >> 8 * byte;
+    unsigned char unsigned_char = unsigned_int & 0b11111111;
+    sum += CountUnitBitsOfUnsignedChar(unsigned_char);
   }
   return sum;
 }
