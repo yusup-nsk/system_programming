@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 
-#define MAX_ABONENTS 100
+#define MAX_ABONENTS 4 //TODO =100
 #define DATA_LENGTH 10 //длина строки с данными вместе с '\0'
 #define MAX_LENGTH 256
 #define SLEEP_SECONDS 2 // пауза в секундах
@@ -17,13 +18,14 @@ struct node {
   struct abonent abonent;
   struct node * prev;
   struct  node * next;
+  int amount;
 };
 
 int InputData(char *); /* отсеивает пробельные символы и
 считывает первые ( DATA_LENGTH-1 ) символы   в введенном слове */
 void OutputAbonentData(struct abonent abonent);
-
-void InputAbonentList( struct  node * head);
+int CountAbonents(struct  node *head);
+void InputAbonentList(struct  node **head, struct  node ** tail);
 void RemoveAbonentList(struct  node * head);
 int FindAbonentList(const struct  node * head);
 void OutputAllAbonentsList(const struct  node * head);
@@ -51,7 +53,7 @@ int main() {
         menu_choice < 6) {
       switch (menu_choice) {
       case 1: // добавление абонента
-        InputAbonentList(head);
+        InputAbonentList(&head,&tail);
         sleep(SLEEP_SECONDS);
         break;
       case 2: // удаление: на место удаляемой записи копируется последняя по
@@ -77,6 +79,9 @@ int main() {
       sleep(2 * SLEEP_SECONDS);
     }
   } // while
+
+
+  printf("======%d=====\n", CountAbonents(head));
   return 0;
 }
 
@@ -96,6 +101,12 @@ void OutputAbonentData(struct abonent abonent) {
 }
 
 
+int CountAbonents(struct  node *head)
+{
+  int amount = 0;
+  for(;head; amount++, head=head->next);
+  return amount;
+}
 
 
 
@@ -120,8 +131,44 @@ void InputAbonent(struct abonent phone_book[MAX_ABONENTS],
   }
 }
 
-void InputAbonentList( struct  node * head){
 
+
+
+void InputAbonentList(struct  node **ptr_head, struct  node ** ptr_tail){
+  if(NULL == ptr_head || NULL == ptr_tail) {printf("ERROR: wrong arguments in InputAbonentList\n");
+  return;}
+  if (CountAbonents(*ptr_head) == MAX_ABONENTS) {
+    printf("Справочник переполнен, невозможно добавить абонента\n");
+  } else {
+    if (NULL==*ptr_tail){
+      *ptr_tail=malloc(sizeof(struct node)); 
+      *ptr_head = *ptr_tail;
+      (*ptr_tail)->prev=NULL;
+      (*ptr_tail)->next=NULL;
+    } else {
+    (*ptr_tail)->next = malloc(sizeof(struct node)); 
+    *ptr_tail = (*ptr_tail)->next;
+          (*ptr_tail)->prev=NULL;
+      (*ptr_tail)->next=NULL;
+    }
+    if (*ptr_tail){    
+    printf("Введите имя абонента:\n");
+    while (InputData((*ptr_tail)->abonent.name) == 0)
+      ;
+    printf("Введите фамилию абонента:\n");
+    while (InputData((*ptr_tail)->abonent.second_name) == 0)
+      ;
+    printf("Введите телефон абонента:\n");
+    while (InputData((*ptr_tail)->abonent.tel) == 0)
+      ;
+    printf("Добавлен абонент:\n");
+    OutputAbonentData((*ptr_tail)->abonent);
+    // (*ptr_amount_of_abonents)++;
+    }
+    else {
+      printf("Can`t malloc\n");
+    }
+  }
 }
 void RemoveAbonentList(struct  node * head){
 
@@ -195,24 +242,20 @@ int FindAbonentList(const struct  node * head){
 
 }
 
-void OutputAllAbonents(const struct abonent phone_book[MAX_ABONENTS],
-                       int amount_of_abonents) {
-  if (amount_of_abonents == 0) {
-    printf("Справочник пуст, нечего выводить\n");
-    return;
-  }
-  printf("\nСписок всех абонентов: \n");
-  for (int i = 0; i < amount_of_abonents; ++i) {
-    printf("%3d. ", i + 1);
-    OutputAbonentData(phone_book[i]);
-  }
-  printf("\n");
-}
+
 
 void OutputAllAbonentsList(const struct  node * head){
   if (NULL == head) {
     printf("Справочник пуст, нечего выводить\n");
     return;
   }
-
+  printf("\nСписок всех абонентов: \n");
+  int i = 0;
+  while(head){
+     printf("%3d. ", i + 1);
+    OutputAbonentData(head->abonent);
+    head = head->next;
+    i++;
+  }
+  printf("\n");
 }
