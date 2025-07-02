@@ -18,7 +18,7 @@ struct node {
   struct abonent abonent;
   struct node * prev;
   struct  node * next;
-  int amount;
+//  int amount;
 };
 
 int InputData(char *); /* отсеивает пробельные символы и
@@ -26,9 +26,12 @@ int InputData(char *); /* отсеивает пробельные символы
 void OutputAbonentData(struct abonent abonent);
 int CountAbonents(struct  node *head);
 void InputAbonentList(struct  node **head, struct  node ** tail);
-void RemoveAbonentList(struct  node * head);
+void RemoveAbonentFromList(struct  node ** head, struct node ** tail);
 int FindAbonentList(const struct  node * head);
 void OutputAllAbonentsList(const struct  node * head);
+void FreeAbonentList(struct  node **ptr_head, struct  node ** ptr_tail);
+
+
 
 int main() {
   struct abonent phone_book[MAX_ABONENTS];
@@ -59,7 +62,7 @@ int main() {
       case 2: // удаление: на место удаляемой записи копируется последняя по
         // номеру  запись, место в памяти, занимавшая последняя запись
         // обнуляется, количество записей уменьшается на 1
-        RemoveAbonentList(head);
+        RemoveAbonentFromList(&head, &tail);
         sleep(SLEEP_SECONDS);
         break;
       case 3: // поиск по имени
@@ -82,6 +85,7 @@ int main() {
 
 
   printf("======%d=====\n", CountAbonents(head));
+  FreeAbonentList(&head, &tail);
   return 0;
 }
 
@@ -107,30 +111,6 @@ int CountAbonents(struct  node *head)
   for(;head; amount++, head=head->next);
   return amount;
 }
-
-
-
-
-void InputAbonent(struct abonent phone_book[MAX_ABONENTS],
-                  int *ptr_amount_of_abonents) {
-  if (*ptr_amount_of_abonents == MAX_ABONENTS) {
-    printf("Справочник переполнен, невозможно добавить абонента\n");
-  } else {
-    printf("Введите имя абонента:\n");
-    while (InputData(phone_book[*ptr_amount_of_abonents].name) == 0)
-      ;
-    printf("Введите фамилию абонента:\n");
-    while (InputData(phone_book[*ptr_amount_of_abonents].second_name) == 0)
-      ;
-    printf("Введите телефон абонента:\n");
-    while (InputData(phone_book[*ptr_amount_of_abonents].tel) == 0)
-      ;
-    printf("Добавлен абонент:\n");
-    OutputAbonentData(phone_book[*ptr_amount_of_abonents]);
-    (*ptr_amount_of_abonents)++;
-  }
-}
-
 
 
 
@@ -170,76 +150,70 @@ void InputAbonentList(struct  node **ptr_head, struct  node ** ptr_tail){
     }
   }
 }
-void RemoveAbonentList(struct  node * head){
 
-}
-
-void RemoveAbonent(struct abonent phone_book[MAX_ABONENTS],
-                   int *ptr_amount_of_abonents) {
-  if (*ptr_amount_of_abonents == 0) {
+void RemoveAbonentFromList(struct  node ** ptr_head, struct node ** ptr_tail){
+  if (NULL == ptr_head || NULL == *ptr_head) {
     printf("Справочник пуст, нечего удалять\n");
     return;
   }
-  printf("Введите порядковый номер записи в справочнике, который хотите "
-         "удалить:\n");
+   printf("Введите имя  абонента, которого хотите "
+         "удалить из справочника:\n");
   char data[DATA_LENGTH];
+  char name_for_delete[DATA_LENGTH];
+  char second_name_for_delete[DATA_LENGTH];
   InputData(data);
-  int index;
-  int scanned = sscanf(data, "%d", &index);
-  --index;
-  if (scanned != 1) {
-    printf("Это не номер\n");
-  } else if (index < 0 || index >= *ptr_amount_of_abonents) {
-    { printf("Нет записи с таким номером\n"); }
-  } else {
-    strncpy(phone_book[index].name,
-            phone_book[*ptr_amount_of_abonents - 1].name, DATA_LENGTH);
-    strncpy(phone_book[index].second_name,
-            phone_book[*ptr_amount_of_abonents - 1].second_name, DATA_LENGTH);
-    strncpy(phone_book[index].tel, phone_book[*ptr_amount_of_abonents - 1].tel,
-            DATA_LENGTH);
-    for (int i = 0; i < DATA_LENGTH; ++i) {
-      phone_book[*ptr_amount_of_abonents - 1].name[i] = 0;
-      phone_book[*ptr_amount_of_abonents - 1].second_name[i] = 0;
-      phone_book[*ptr_amount_of_abonents - 1].tel[i] = 0;
+  int scanned = sscanf(data, "%s", name_for_delete);
+  //  if (scanned != 1){
+
+  //  }
+   printf("Введите фамилию  абонента, которого хотите "
+         "удалить из справочника:\n");
+  InputData(data);
+   scanned = sscanf(data, "%s", second_name_for_delete);         
+  // if (scanned != 1) {
+  //   printf("Это не номер\n");
+  // } else 
+  for(struct node * p= *ptr_head; p; p=p->next){
+    if (strncmp(p->abonent.name, name_for_delete, DATA_LENGTH)==0 && strncmp(p->abonent.second_name, second_name_for_delete, DATA_LENGTH)==0){
+      if (p==*ptr_tail){
+        *ptr_tail=(*ptr_tail)->prev;
+        (*ptr_tail)->next=NULL;
+                free(p);
+                p=NULL;
+      }else if (p==*ptr_head) {
+        *ptr_head=(*ptr_head)->next;
+
+      }
     }
-    (*ptr_amount_of_abonents)--;
-    printf("Запись удалена\n");
   }
+
+    printf("Запись удалена\n"); 
 }
 
-int FindAbonent(const struct abonent phone_book[MAX_ABONENTS],
-                int amount_of_abonents) {
-  if (amount_of_abonents == 0) {
+int FindAbonentList(const struct  node * head){
+  if ( NULL == head) {
     printf("Справочник пуст, нечего искать\n");
     return 0;
   }
-  char data[DATA_LENGTH];
+  char name_for_seek[DATA_LENGTH]; 
   do {
     printf("Введите имя для поиска:\n");
-    InputData(data);
-  } while (data[0] == '\0');
-  int found = 0;
-  for (int i = 0; i < amount_of_abonents; ++i) {
-    if (strncmp(data, phone_book[i].name, DATA_LENGTH) == 0) {
-      printf("%3d. ", i + 1);
-      OutputAbonentData(phone_book[i]);
+    InputData(name_for_seek);    
+  } while (name_for_seek[0] == '\0');
+ int found = 0;
+  for(const struct node * p= head; p; p=p->next){
+    if (strncmp(p->abonent.name, name_for_seek, DATA_LENGTH)==0){
+      OutputAbonentData(p->abonent);
       found++;
     }
   }
   if (found) {
-    printf("Найдено %d записей абонентов с именем \"%s\"\n", found, data);
+    printf("Найдено %d записей абонентов с именем \"%s\"\n", found, name_for_seek);
   }
-
   else {
-    printf("Не найдено ни одной записи с именем \"%s\"\n", data);
+    printf("Не найдено ни одной записи с именем \"%s\"\n", name_for_seek);
   }
   return found;
-}
-
-int FindAbonentList(const struct  node * head){
-
-
 }
 
 
@@ -258,4 +232,18 @@ void OutputAllAbonentsList(const struct  node * head){
     i++;
   }
   printf("\n");
+}
+
+void FreeAbonentList(struct  node **ptr_head, struct  node ** ptr_tail)
+{
+  *ptr_tail = NULL;
+  //struct node * free_this_ptr=NULL;
+   struct node * next_ptr=*ptr_head;
+    struct node * current = NULL;
+   for(; next_ptr; next_ptr = next_ptr->next){
+    if (current) {free(current);
+    }
+    current = next_ptr;
+   }
+  *ptr_head = NULL;
 }
