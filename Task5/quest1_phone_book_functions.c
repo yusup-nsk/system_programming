@@ -14,21 +14,17 @@ struct abonent {
 };
 
 int InputData(char *); /* отсеивает пробельные символы и
-считывает первые ( DATA_LENGTH-1 ) символы   в введенном слове
-*/
-void OutputAbonentData(struct abonent abonent) {
-  printf("Имя: %-*s  Фамилия: %-*s  Телефон: %-*s\n", DATA_LENGTH, abonent.name,
-         DATA_LENGTH, abonent.second_name, DATA_LENGTH, abonent.tel);
-}
+считывает первые ( DATA_LENGTH-1 ) символы   в введенном слове */
+void OutputAbonentData(struct abonent abonent);
 
 void InputAbonent(struct abonent phone_book[MAX_ABONENTS],
                   int *ptr_amount_of_abonents);
 void RemoveAbonent(struct abonent phone_book[MAX_ABONENTS],
                    int *ptr_amount_of_abonents);
-int FindAbonent(struct abonent phone_book[MAX_ABONENTS],
-                int *ptr_amount_of_abonents);
-void OutputAllAbonents(struct abonent phone_book[MAX_ABONENTS],
-                       int *ptr_amount_of_abonents);
+int FindAbonent(const struct abonent phone_book[MAX_ABONENTS],
+                int amount_of_abonents);
+void OutputAllAbonents(const struct abonent phone_book[MAX_ABONENTS],
+                       int amount_of_abonents);
 
 int main() {
   struct abonent phone_book[MAX_ABONENTS];
@@ -45,7 +41,6 @@ int main() {
   while (repeat) {
     printf("\n%s%s", title, menu);
     printf("Введите пункт меню: ");
-    data[0] = '\0';
     if (InputData(data) == 0 || data[0] == '\n' || data[0] == '\0')
       continue;
     if (sscanf(data, "%d", &menu_choice) == 1 && menu_choice > 0 &&
@@ -62,11 +57,11 @@ int main() {
         sleep(SLEEP_SECONDS);
         break;
       case 3: // поиск по имени
-        FindAbonent(phone_book, &amount_of_abonents);
+        FindAbonent(phone_book, amount_of_abonents);
         sleep(SLEEP_SECONDS);
         break;
       case 4: // вывод списка абонентов
-        OutputAllAbonents(phone_book, &amount_of_abonents);
+        OutputAllAbonents(phone_book, amount_of_abonents);
         sleep(2 * SLEEP_SECONDS);
         break;
       case 5: // выход из программы
@@ -75,19 +70,25 @@ int main() {
       }
     } else {
       printf("Неправильно введен пункт меню\n");
-       sleep(2 * SLEEP_SECONDS);
+      sleep(2 * SLEEP_SECONDS);
     }
   } // while
   return 0;
 }
 
 int InputData(char *data) {
+  data[0] = '\0';
   char str[MAX_LENGTH];
   fgets(str, MAX_LENGTH, stdin);
   char format[8];
   sprintf(format, " %%%ds", DATA_LENGTH - 1);
   sscanf(str, format, data);
   return (strlen(data));
+}
+
+void OutputAbonentData(struct abonent abonent) {
+  printf("Имя: %-*s  Фамилия: %-*s  Телефон: %-*s\n", DATA_LENGTH, abonent.name,
+         DATA_LENGTH, abonent.second_name, DATA_LENGTH, abonent.tel);
 }
 
 void InputAbonent(struct abonent phone_book[MAX_ABONENTS],
@@ -112,7 +113,7 @@ void InputAbonent(struct abonent phone_book[MAX_ABONENTS],
 
 void RemoveAbonent(struct abonent phone_book[MAX_ABONENTS],
                    int *ptr_amount_of_abonents) {
-  if (&ptr_amount_of_abonents == 0) {
+  if (*ptr_amount_of_abonents == 0) {
     printf("Справочник пуст, нечего удалять\n");
     return;
   }
@@ -139,24 +140,26 @@ void RemoveAbonent(struct abonent phone_book[MAX_ABONENTS],
       phone_book[*ptr_amount_of_abonents - 1].second_name[i] = 0;
       phone_book[*ptr_amount_of_abonents - 1].tel[i] = 0;
     }
-    --(*ptr_amount_of_abonents);
+    (*ptr_amount_of_abonents)--;
     printf("Запись удалена\n");
   }
 }
 
-int FindAbonent(struct abonent phone_book[MAX_ABONENTS],
-                int *ptr_amount_of_abonents) {
-  if (&ptr_amount_of_abonents == 0) {
+int FindAbonent(const struct abonent phone_book[MAX_ABONENTS],
+                int amount_of_abonents) {
+  if (amount_of_abonents == 0) {
     printf("Справочник пуст, нечего искать\n");
     return 0;
   }
-  printf("Введите имя для поиска:\n");
   char data[DATA_LENGTH];
-  InputData(data);
+  do {
+    printf("Введите имя для поиска:\n");
+    InputData(data);
+  } while (data[0] == '\0');
   int found = 0;
-  for (int i = 0; i < *ptr_amount_of_abonents; ++i) {
+  for (int i = 0; i < amount_of_abonents; ++i) {
     if (strncmp(data, phone_book[i].name, DATA_LENGTH) == 0) {
-      printf("%3d. ", i);
+      printf("%3d. ", i + 1);
       OutputAbonentData(phone_book[i]);
       found++;
     }
@@ -171,14 +174,14 @@ int FindAbonent(struct abonent phone_book[MAX_ABONENTS],
   return found;
 }
 
-void OutputAllAbonents(struct abonent phone_book[MAX_ABONENTS],
-                       int *ptr_amount_of_abonents) {
-  if (&ptr_amount_of_abonents == 0) {
-    printf("Справочник пуст, нечего показывать\n");
+void OutputAllAbonents(const struct abonent phone_book[MAX_ABONENTS],
+                       int amount_of_abonents) {
+  if (amount_of_abonents == 0) {
+    printf("Справочник пуст, нечего выводить\n");
     return;
   }
   printf("\nСписок всех абонентов: \n");
-  for (int i = 0; i < *ptr_amount_of_abonents; ++i) {
+  for (int i = 0; i < amount_of_abonents; ++i) {
     printf("%3d. ", i + 1);
     OutputAbonentData(phone_book[i]);
   }
