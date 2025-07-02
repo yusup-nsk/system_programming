@@ -36,7 +36,7 @@ int main() {
   while (repeat) {
     printf("\n%s%s", title, menu);
     printf("Введите пункт меню: ");
-    if (InputData(data) == 0 || data[0] == '\n')
+    if (InputData(data) == 0 || data[0] == '\n' || data[0] == '\0')
       continue;
     if (sscanf(data, "%d", &menu_choice) == 1 && menu_choice > 0 &&
         menu_choice < 6) {
@@ -63,6 +63,11 @@ int main() {
       case 2: // удаление: на место удаляемой записи копируется последняя по
               // номеру  запись, место в памяти, занимавшая последняя запись
               // обнуляется, количество записей уменьшается на 1
+        if (amount_of_abonents == 0) {
+          printf("Справочник пуст, нечего удалять\n");
+          sleep(SLEEP_SECONDS);
+          break;
+        }
         printf("Введите порядковый номер записи в справочнике, который хотите "
                "удалить:\n");
         InputData(data);
@@ -91,12 +96,19 @@ int main() {
         sleep(SLEEP_SECONDS);
         break;
       case 3: // поиск по имени
-        printf("Введите имя для поиска:\n");
-        InputData(data);
+        if (amount_of_abonents == 0) {
+          printf("Справочник пуст, нечего искать\n");
+          sleep(SLEEP_SECONDS);
+          break;
+        }
+        do {
+          printf("Введите имя для поиска:\n");
+          InputData(data);
+        } while (data[0] == '\0');
         int found = 0;
         for (int i = 0; i < amount_of_abonents; ++i) {
           if (strncmp(data, phone_book[i].name, DATA_LENGTH) == 0) {
-            printf("%3d. ", i);
+            printf("%3d. ", i + 1);
             OutputAbonentData(phone_book[i]);
             found++;
           }
@@ -111,6 +123,11 @@ int main() {
         sleep(SLEEP_SECONDS);
         break;
       case 4: // вывод списка абонентов
+        if (amount_of_abonents == 0) {
+          printf("Справочник пуст, нечего выводить\n");
+          sleep(SLEEP_SECONDS);
+          break;
+        }
         printf("\nСписок всех абонентов: \n");
         for (int i = 0; i < amount_of_abonents; ++i) {
           printf("%3d. ", i + 1);
@@ -125,12 +142,14 @@ int main() {
       }
     } else {
       printf("Неправильно введен пункт меню\n");
+      sleep(SLEEP_SECONDS);
     }
   } // while
   return 0;
 }
 
 int InputData(char *data) {
+  data[0] = '\0';
   char str[MAX_LENGTH];
   fgets(str, MAX_LENGTH, stdin);
   char format[8];
