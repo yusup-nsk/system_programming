@@ -1,13 +1,12 @@
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #define MAX_ABONENTS 100
-#define DATA_LENGTH 10 //длина строки с данными вместе с '\0'
+#define DATA_LENGTH 10  //длина строки с данными вместе с '\0'
 #define MAX_LENGTH 256
-#define SLEEP_SECONDS 2 // пауза в секундах
+#define SLEEP_SECONDS 2  // пауза в секундах
 
 struct abonent {
   char name[DATA_LENGTH];
@@ -30,9 +29,7 @@ void RemoveAbonentFromList(struct node **head, struct node **tail);
 int FindAbonentList(const struct node *head);
 void OutputAllAbonentsList(const struct node *head);
 void FreeAbonentList(struct node **ptr_head, struct node **ptr_tail);
-// for testing:
-void ReverseOutputAllAbonentsList(const struct node *tail);
-// TODO DELETE THIS
+
 int main() {
   struct node *head = NULL;
   struct node *tail = NULL;
@@ -48,39 +45,36 @@ int main() {
   while (repeat) {
     printf("\n%s%s", title, menu);
     printf("Введите пункт меню: ");
-    if (0 == InputData(data))
-      continue;
+    if (0 == InputData(data)) continue;
     if (sscanf(data, "%d", &menu_choice) == 1 && menu_choice > 0 &&
         menu_choice < 6) {
       switch (menu_choice) {
-      case 1: // добавление абонента
-        InputAbonentList(&head, &tail);
-        sleep(SLEEP_SECONDS);
-        break;
-      case 2: // удаление первой встреченной записи абонента с данными именем и
-              // фамилией
-        RemoveAbonentFromList(&head, &tail);
-        sleep(SLEEP_SECONDS);
-        break;
-      case 3: // поиск по имени
-        FindAbonentList(head);
-        sleep(SLEEP_SECONDS);
-        break;
-      case 4: // вывод списка абонентов
-        OutputAllAbonentsList(head);
-        sleep(2 * SLEEP_SECONDS);
-        ReverseOutputAllAbonentsList(tail);
-        sleep(2 * SLEEP_SECONDS);
-        break;
-      case 5: // выход из программы
-        repeat = 0;
-        break;
+        case 1:  // добавление абонента
+          InputAbonentList(&head, &tail);
+          sleep(SLEEP_SECONDS);
+          break;
+        case 2:  // удаление первой встреченной записи абонента с данными именем
+                 // и фамилией
+          RemoveAbonentFromList(&head, &tail);
+          sleep(SLEEP_SECONDS);
+          break;
+        case 3:  // поиск по имени
+          FindAbonentList(head);
+          sleep(SLEEP_SECONDS);
+          break;
+        case 4:  // вывод списка абонентов
+          OutputAllAbonentsList(head);
+          sleep(2 * SLEEP_SECONDS);
+          break;
+        case 5:  // выход из программы
+          repeat = 0;
+          break;
       }
     } else {
       printf("Неправильно введен пункт меню\n");
       sleep(2 * SLEEP_SECONDS);
     }
-  } // while
+  }  // while
   FreeAbonentList(&head, &tail);
   return 0;
 }
@@ -120,12 +114,10 @@ void InputAbonentList(struct node **ptr_head, struct node **ptr_tail) {
   } else {
     if (NULL == *ptr_tail) {
       *ptr_tail = malloc(sizeof(struct node));
-      assert(NULL == *ptr_head);
       *ptr_head = *ptr_tail;
       (*ptr_tail)->prev = NULL;
       (*ptr_tail)->next = NULL;
     } else {
-      assert(NULL != *ptr_head);
       (*ptr_tail)->next = malloc(sizeof(struct node));
       (*ptr_tail)->next->prev = *ptr_tail;
       (*ptr_tail)->next->next = NULL;
@@ -159,12 +151,14 @@ void RemoveAbonentFromList(struct node **ptr_head, struct node **ptr_tail) {
   char second_name_for_delete[DATA_LENGTH];
   int found = 0;
   do {
-    printf("Введите имя  абонента, которого хотите "
-           "удалить из справочника:\n");
+    printf(
+        "Введите имя  абонента, которого хотите "
+        "удалить из справочника:\n");
   } while (0 == InputData(name_for_delete));
   do {
-    printf("Введите фамилию  абонента, которого хотите "
-           "удалить из справочника:\n");
+    printf(
+        "Введите фамилию  абонента, которого хотите "
+        "удалить из справочника:\n");
   } while (0 == InputData(second_name_for_delete));
 
   for (struct node *p = *ptr_head; p;) {
@@ -192,8 +186,7 @@ void RemoveAbonentFromList(struct node **ptr_head, struct node **ptr_tail) {
       free(p);
       p = NULL;
     }
-    if (p)
-      p = p->next;
+    if (p) p = p->next;
   }
   if (found)
     printf("%d запись удалена\n", found);
@@ -244,28 +237,11 @@ void OutputAllAbonentsList(const struct node *head) {
   printf("\n");
 }
 
-void ReverseOutputAllAbonentsList(const struct node *tail) {
-  if (NULL == tail) {
-    printf("Справочник пуст, нечего выводить\n");
-    return;
-  }
-  printf("\nСписок всех абонентов: \n");
-  int i = 0;
-  while (tail) {
-    printf("%3d. ", ++i);
-    OutputAbonentData(tail->abonent);
-    tail = tail->prev;
-  }
-  printf("\n");
-}
-
 void FreeAbonentList(struct node **ptr_head, struct node **ptr_tail) {
   if (NULL == ptr_head || NULL == ptr_tail || NULL == *ptr_head ||
       NULL == *ptr_tail)
     return;
-  for (struct node *next_ptr = *ptr_head;
-       next_ptr != *ptr_tail; 
-  ) {
+  for (struct node *next_ptr = *ptr_head; next_ptr != *ptr_tail;) {
     struct node *current = next_ptr;
     next_ptr = next_ptr->next;
     current->prev = NULL;
