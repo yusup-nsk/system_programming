@@ -2,20 +2,24 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "add.c"
-#include "div.c"
-#include "mul.c"
-#include "sub.c"
+// #include "add.c"
+// #include "div.c"
+// #include "mul.c"
+// #include "sub.c"
 
 #define DATA_LENGTH 10 //длина строки с данными вместе с '\0'
 #define MAX_LENGTH 256
 #define SLEEP_SECONDS 2 // пауза в секундах
 
 int InputData(char *);
-void add(int, int);
-void div(int, int);
-void mul(int, int);
-void sub(int, int);
+// void add(int, int);
+// void div(int, int);
+// void mul(int, int);
+// void sub(int, int);
+extern   void add(int, int);
+extern  void div(int, int);
+extern  void mul(int, int);
+extern  void sub(int, int);
 
 int main() {
   const char title[] = "\n\t\tЦелочисленный калькулятор\n\n";
