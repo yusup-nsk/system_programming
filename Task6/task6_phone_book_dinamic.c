@@ -72,7 +72,7 @@ int main() {
       }
     } else {
       printf("Неправильно введен пункт меню\n");
-      sleep(2 * SLEEP_SECONDS);
+      sleep(SLEEP_SECONDS);
     }
   }  // while
   FreeAbonentList(&head, &tail);

@@ -104,7 +104,7 @@ int main() {
         do {
           printf("Введите имя для поиска:\n");
           InputData(data);
-        } while (data[0] == '\0');
+        } while ( '\0' == data[0]);
         int found = 0;
         for (int i = 0; i < amount_of_abonents; ++i) {
           if (strncmp(data, phone_book[i].name, DATA_LENGTH) == 0) {
