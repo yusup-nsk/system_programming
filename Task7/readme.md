@@ -18,8 +18,8 @@
 модуле (add.c, sub.c, mul.c, div.c)). 
 
 Для создания статической библиотеки используются команды   
-**gcc -Wall -Wextra -Werror -pedantic -c ./arithmetic_functions/*.c** и  
-**ar rcs libcalc.a *.o***  
+`gcc -Wall -Wextra -Werror -pedantic -c ./arithmetic_functions/*.c` и  
+`ar rcs libcalc.a *.o`  
 или **`make libcalc.a`**
 
 Для запуска калькулятора набрать **`make run`**
