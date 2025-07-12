@@ -2,32 +2,24 @@
 #include <string.h>
 #include <unistd.h>
 
-// #include "add.c"
-// #include "div.c"
-// #include "mul.c"
-// #include "sub.c"
-
-#define DATA_LENGTH 10 //длина строки с данными вместе с '\0'
+#define DATA_LENGTH 12  //длина строки с данными вместе с '\0'
 #define MAX_LENGTH 256
-#define SLEEP_SECONDS 2 // пауза в секундах
+#define SLEEP_SECONDS 2  // пауза в секундах
 
 int InputData(char *);
-// void add(int, int);
-// void div(int, int);
-// void mul(int, int);
-// void sub(int, int);
-extern   void add(int, int);
-extern  void div(int, int);
-extern  void mul(int, int);
-extern  void sub(int, int);
+extern void add(int, int);
+extern void div(int, int);
+extern void mul(int, int);
+extern void sub(int, int);
 
 int main() {
   const char title[] = "\n\t\tЦелочисленный калькулятор\n\n";
-  const char menu[] = "1) Сложение\n"
-                      "2) Вычитание\n"
-                      "3) Умножение\n"
-                      "4) Деление\n"
-                      "5) Выход\n";
+  const char menu[] =
+      "1) Сложение\n"
+      "2) Вычитание\n"
+      "3) Умножение\n"
+      "4) Деление\n"
+      "5) Выход\n";
 
   char data[DATA_LENGTH];
   int menu_choice;
@@ -35,8 +27,7 @@ int main() {
   while (1) {
     printf("\n%s%s", title, menu);
     printf("Введите пункт меню: ");
-    if (0 == InputData(data))
-      continue;
+    if (0 == InputData(data)) continue;
     if (sscanf(data, "%d", &menu_choice) == 1 && menu_choice > 0 &&
         menu_choice < 6) {
       int number_1, number_2;
@@ -50,28 +41,28 @@ int main() {
         printf("Введите второе целое число:\n");
       } while (0 == InputData(data) || 1 != sscanf(data, "%d", &number_2));
       switch (menu_choice) {
-      case 1:
-        add(number_1, number_2);
-        sleep(SLEEP_SECONDS);
-        break;
-      case 2:
-        sub(number_1, number_2);
-        sleep(SLEEP_SECONDS);
-        break;
-      case 3:
-        mul(number_1, number_2);
-        sleep(SLEEP_SECONDS);
-        break;
-      case 4:
-        div(number_1, number_2);
-        sleep(SLEEP_SECONDS);
-        break;
+        case 1:
+          add(number_1, number_2);
+          sleep(SLEEP_SECONDS);
+          break;
+        case 2:
+          sub(number_1, number_2);
+          sleep(SLEEP_SECONDS);
+          break;
+        case 3:
+          mul(number_1, number_2);
+          sleep(SLEEP_SECONDS);
+          break;
+        case 4:
+          div(number_1, number_2);
+          sleep(SLEEP_SECONDS);
+          break;
       }
     } else {
       printf("Неправильно введен пункт меню\n");
       sleep(SLEEP_SECONDS);
     }
-  } // while
+  }  // while
   return 0;
 }
 
