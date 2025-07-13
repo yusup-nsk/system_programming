@@ -25,8 +25,7 @@ if (PwStatus == 0) {
 printf("Bad password!\n");
 exit(1);
 } else {
-printf("Access granted!\n"); // Строка для которой нужно
- выяснить адрес
+printf("Access granted!\n"); // Строка для которой нужно выяснить адрес
 }
 return 0;
 }

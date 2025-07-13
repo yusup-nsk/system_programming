@@ -7,6 +7,7 @@
 #define SLEEP_SECONDS 2  // пауза в секундах
 
 int InputData(char *);
+
 extern void add(int, int);
 extern void div(int, int);
 extern void mul(int, int);

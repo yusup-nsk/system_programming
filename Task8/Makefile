@@ -4,23 +4,21 @@ SOURCE_DIR = ./arithmetic_functions
 EXECUTABLE = calculator
 LIB = libcalc.so
 
-all: run
+all: exe run
 
 rebuild: clean  exe
 
-exe: objects $(LIB)
-	$(CC)  $(CFLAGS)  -c -fPIC main.c
-	export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
-	$(CC) -o $(EXECUTABLE) main.o -L./ libcalc.so
+exe: $(LIB)
+	$(CC) $(CFLAGS) -o $(EXECUTABLE) main.c -L. -l:$(LIB) -Wl,-rpath,"${PWD}"
 
-run: exe
+run:
 	./$(EXECUTABLE)
 
 objects:
 	$(CC)  $(CFLAGS)  -c -fPIC $(SOURCE_DIR)/*.c
 
 $(LIB): objects
-	$(CC) -shared -o $(LIB) *.o
+	$(CC) -o $(LIB) -shared  *.o
 	make rm_objects
 
 format:

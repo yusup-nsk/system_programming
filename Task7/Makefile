@@ -7,9 +7,8 @@ all: run
 
 rebuild: clean  exe
 
-exe: objects $(LIB)
-	$(CC) main.c -L. libcalc.a -o $(EXECUTABLE)
-	make rm_objects
+exe: $(LIB)
+	$(CC) main.c -L. $(LIB) -o $(EXECUTABLE)
 
 run: exe
 	./$(EXECUTABLE)
