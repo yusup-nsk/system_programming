@@ -3,10 +3,17 @@ CFLAGS := -Wall -Werror -Wextra -pedantic
 CURSES_FLAG := -lncurses
 EXECUTABLE := mycommander
 
-run: exe
+run: clean exe
 	./$(EXECUTABLE)
 exe:
-	$(CC) $(CFLAGS) main.c -o $(EXECUTABLE) $(CURSES_FLAG)
+	$(CC) $(CFLAGS) -c functions/*.c  $(CURSES_FLAG)
+	$(CC) $(CFLAGS) main.c *.o -o $(EXECUTABLE) $(CURSES_FLAG)
 
 format:
-	clang-format --style=Google -i *.[ch]
+	clang-format --style=Google -i *.[ch] functions/*.[ch]
+
+cleano:
+	rm -f *.o 
+
+clean: cleano
+	rm -f $(EXECUTABLE)
