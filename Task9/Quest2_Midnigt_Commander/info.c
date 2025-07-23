@@ -29,14 +29,12 @@ void output_info_w(const Info *arr_info, unsigned number, unsigned rows,
                    unsigned columns, unsigned current_index);
 
 void change_directory_up(char *fulldirname);
-void change_directory(char *fulldirname,const char *directory);
+void change_directory(char *fulldirname, const char *directory);
 
 int main(int argc, char *argv[]) {
-
   Info arr_info[MAX_FILES];
 
-    char fulldirname[LEN] = "/";
-
+  char fulldirname[LEN] = "/";
 
   int number = dir_info(fulldirname, arr_info);
   output_info(arr_info, number);
@@ -51,7 +49,7 @@ int main(int argc, char *argv[]) {
     change_directory(fulldirname, arr_info[1].name);
     printf("\n%s\n", fulldirname);
     number = dir_info(fulldirname, arr_info);
-    output_info_w(arr_info, number,6,40,100);
+    output_info_w(arr_info, number, 6, 40, 100);
   }
 
   exit(EXIT_SUCCESS);
@@ -60,10 +58,8 @@ int main(int argc, char *argv[]) {
 int filter(const struct dirent *name) { return strcmp(name->d_name, "."); }
 
 int compar(const struct dirent **de1, const struct dirent **de2) {
-  if (strcmp((*de1)->d_name, "..") == 0)
-    return -1;
-  if (strcmp((*de2)->d_name, "..") == 0)
-    return 1;
+  if (strcmp((*de1)->d_name, "..") == 0) return -1;
+  if (strcmp((*de2)->d_name, "..") == 0) return 1;
   int res;
   if ((*de1)->d_type == DT_DIR) {
     if ((*de2)->d_type == DT_DIR) {
@@ -110,8 +106,7 @@ int dir_info(const char fulldirname[LEN], Info *arr_info) {
     arr_info[n].size = file_stat.st_size;
     arr_info[n].type = namelist[n]->d_type;
   }
-  for (int n = 0; n < number; n++)
-    free(namelist[n]);
+  for (int n = 0; n < number; n++) free(namelist[n]);
   free(namelist);
   return number;
 }
@@ -122,7 +117,7 @@ void change_directory_up(char *fulldirname) {
     *p = '\0';
   }
 }
-void change_directory(char *fulldirname,const char *directory) {
+void change_directory(char *fulldirname, const char *directory) {
   strncat(fulldirname, "/", 2);
   strncat(fulldirname, directory, LEN);
 }
@@ -180,8 +175,7 @@ void output_info(Info *arr_info, int number) {
 
 void output_info_w(const Info *arr_info, unsigned number, unsigned rows,
                    unsigned columns, unsigned current_index) {
-  if (NULL == arr_info || 0 == number || 0 == rows)
-    return;
+  if (NULL == arr_info || 0 == number || 0 == rows) return;
   unsigned min_name_len = 12, min_size_len = 7, min_time_len = 12;
   unsigned name_len = 12, size_len = 7, time_len = 12;
   if (name_len + size_len + time_len <= columns - 3) {
@@ -191,37 +185,39 @@ void output_info_w(const Info *arr_info, unsigned number, unsigned rows,
     time_len = ((columns - 3.0) * 12.0 / (12 + 7 + 12.));
     name_len = columns - 3 - size_len - time_len;
   }
-  if (current_index > number - 1)
-    current_index = number - 1;
+  if (current_index > number - 1) current_index = number - 1;
   char format[LEN];
   int symbols;
   char str_size[T_LEN];
-  sprintf(format, " %%-%u.%us|%%%u.%us|%%-%u.%us\n", name_len,
-          name_len, size_len, size_len, time_len, time_len);
+  sprintf(format, " %%-%u.%us|%%%u.%us|%%-%u.%us\n", name_len, name_len,
+          size_len, size_len, time_len, time_len);
   int n = 0;
-  if (current_index>rows-1){
-    n=current_index-rows+1;
-  for (; n <= current_index; n++) {
-    symbols = make_string_for_size_column(str_size, size_len, arr_info[n].size);
-    format[0] = (arr_info[n].type == DT_DIR) ? '/' : ' ';
-    symbols = printf(format, arr_info[n].name, str_size, arr_info[n].time);
-      assert(symbols<=columns+1);
+  if (current_index > rows - 1) {
+    n = current_index - rows + 1;
+    for (; n <= current_index; n++) {
+      symbols =
+          make_string_for_size_column(str_size, size_len, arr_info[n].size);
+      format[0] = (arr_info[n].type == DT_DIR) ? '/' : ' ';
+      symbols = printf(format, arr_info[n].name, str_size, arr_info[n].time);
+      assert(symbols <= columns + 1);
+    }
+  } else {
+    for (; n < number && n < rows; n++) {
+      symbols =
+          make_string_for_size_column(str_size, size_len, arr_info[n].size);
+      format[0] = (arr_info[n].type == DT_DIR) ? '/' : ' ';
+      symbols = printf(format, arr_info[n].name, str_size, arr_info[n].time);
+      assert(symbols <= columns + 1);
+    }
+    if (number < rows) {
+      for (; n < rows; n++) {
+        symbols =
+            make_string_for_size_column(str_size, size_len, arr_info[n].size);
+        format[0] = (arr_info[n].type == DT_DIR) ? '/' : ' ';
+        symbols = printf(format, " ", " ", " ");
+        assert(symbols <= columns + 1);
+      }
+    }
   }
-} else{
-  for (; n < number && n<rows; n++) {
-    symbols = make_string_for_size_column(str_size, size_len, arr_info[n].size);
-    format[0] = (arr_info[n].type == DT_DIR) ? '/' : ' ';
-    symbols = printf(format, arr_info[n].name, str_size, arr_info[n].time);
-      assert(symbols<=columns+1);
-  }
-  if (number<rows){
-     for (; n<rows; n++) {
-    symbols = make_string_for_size_column(str_size, size_len, arr_info[n].size);
-    format[0] = (arr_info[n].type == DT_DIR) ? '/' : ' ';
-    symbols = printf(format, " ", " ", " ");
-      assert(symbols<=columns+1);
-  } 
-  }
-}
   printf("format: %s;   symbols==%d", format, symbols);
 }
