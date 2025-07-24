@@ -17,6 +17,7 @@ void sig_winch(int signo) {
 }
 
 enum { LEFT_WINDOW, RIGHT_WINDOW };
+
 int main() {
   WINDOW *the_window[2];
   Info two_info_arrays[2][MAX_FILES];
@@ -35,16 +36,15 @@ int main() {
   init_pair(2, COLOR_YELLOW, COLOR_BLUE);
   struct winsize size;
   ioctl(fileno(stdout), TIOCGWINSZ, (char *)&size);
-  int lrows, rrows, lcols, rcols;
-  int lpin_x, lpin_y, rpin_x, rpin_y;
-  lrows = rrows = size.ws_row - 2;
-  lcols = rcols = size.ws_col / 2 - 4;
-  lpin_x = 1;
-  lpin_y = 1;
-  rpin_x = lcols + lpin_x + 2;
-  rpin_y = 1;
-  the_window[LEFT_WINDOW] = newwin(lrows, lcols, lpin_y, lpin_x);
-  the_window[RIGHT_WINDOW] = newwin(rrows, rcols, rpin_y, rpin_x);
+  int rows[2], cols[2], pin_x[2], pin_y[2];
+  rows[LEFT_WINDOW] = rows[RIGHT_WINDOW] = size.ws_row - 2;
+  cols[LEFT_WINDOW] = cols[RIGHT_WINDOW] = size.ws_col / 2 - 4;
+  pin_x[LEFT_WINDOW] = 1;
+  pin_x[RIGHT_WINDOW] = cols[LEFT_WINDOW] + pin_x[LEFT_WINDOW] + 2;
+  pin_y[LEFT_WINDOW] = pin_y[RIGHT_WINDOW] = 1;
+  for (int i = 0; i < 2; ++i) {
+    the_window[i] = newwin(rows[i], cols[i], pin_y[i], pin_x[i]);
+  }
   get_dir_info(dir_name[LEFT_WINDOW], two_info_arrays[LEFT_WINDOW],
                &num_records[LEFT_WINDOW]);
   get_dir_info(dir_name[RIGHT_WINDOW], two_info_arrays[RIGHT_WINDOW],
@@ -60,24 +60,26 @@ int main() {
       delwin(the_window[LEFT_WINDOW]);
       delwin(the_window[RIGHT_WINDOW]);
       ioctl(fileno(stdout), TIOCGWINSZ, (char *)&size);
-      lrows = rrows = size.ws_row - 2;
-      lcols = rcols = size.ws_col / 2 - 4;
-      lpin_x = 1;
-      lpin_y = 1;
-      rpin_x = lcols + lpin_x + 2;
-      rpin_y = 1;
-      the_window[LEFT_WINDOW] = newwin(lrows, lcols, lpin_y, lpin_x);
-      the_window[RIGHT_WINDOW] = newwin(rrows, rcols, rpin_y, rpin_x);
+      rows[LEFT_WINDOW] = rows[RIGHT_WINDOW] = size.ws_row - 2;
+      cols[LEFT_WINDOW] = cols[RIGHT_WINDOW] = size.ws_col / 2 - 4;
+      pin_x[LEFT_WINDOW] = 1;
+      pin_x[RIGHT_WINDOW] = cols[LEFT_WINDOW] + pin_x[LEFT_WINDOW] + 2;
+      pin_y[LEFT_WINDOW] = pin_y[RIGHT_WINDOW] = 1;
+      for (int i = 0; i < 2; ++i) {
+        the_window[i] = newwin(rows[i], cols[i], pin_y[i], pin_x[i]);
+      }
     }
 
-    wbkgd(the_window[actual_window], COLOR_PAIR(1));
+    wbkgd(the_window[actual_window], COLOR_PAIR(2));
     box(the_window[actual_window], '|', '-');
     wattron(the_window[actual_window], A_BOLD);
     keypad(the_window[actual_window], TRUE);
     wprintw(the_window[actual_window], "Enter password...\n");
+    wmove(the_window[actual_window], 3, pin_x[LEFT_WINDOW] + 1);
     output_to_window(the_window[actual_window], two_info_arrays[actual_window],
-                     num_records[actual_window], lrows - 1, lcols - 2,
-                     current_index[actual_window]);
+                     num_records[actual_window], rows[LEFT_WINDOW] - 5,
+                     cols[LEFT_WINDOW] - 4, current_index[actual_window]);
+    refresh();
     wrefresh(the_window[actual_window]);
     cbreak();
     ch = getch();

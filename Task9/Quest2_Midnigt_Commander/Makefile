@@ -16,4 +16,4 @@ cleano:
 	rm -f *.o 
 
 clean: cleano
-	rm -f $(EXECUTABLE)
+	rm -f $(EXECUTABLE) a.out
