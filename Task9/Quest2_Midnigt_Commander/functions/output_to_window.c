@@ -70,6 +70,9 @@ void output_to_window(WINDOW *wnd, const Info *arr_info, unsigned number,
   unsigned symbols;
   sprintf(format, " %%-%u.%us|%%%u.%us|%%-%u.%us\n", name_len, name_len,
           size_len, size_len, time_len, time_len);
+  wattron(wnd, A_BOLD);
+  wprintw(wnd, format, " NAME ", " SIZE ", " TIME ");
+  wattroff(wnd, A_BOLD);
   unsigned n = 0;
   if (current_index > rows - 1) {
     n = current_index - rows + 1;
@@ -85,22 +88,40 @@ void output_to_window(WINDOW *wnd, const Info *arr_info, unsigned number,
     for (; n < number && n < rows; n++) {
       if (n == current_index) {
         wattron(wnd, A_BOLD);
-         symbols = output_string(wnd, format, size_len, arr_info[n]);
-          wattroff(wnd, A_BOLD);
+        symbols = output_string(wnd, format, size_len, arr_info[n]);
+        wattroff(wnd, A_BOLD);
       } else {
         // wattroff(wnd, A_BOLD);
-          symbols = output_string(wnd, format, size_len, arr_info[n]);
+        symbols = output_string(wnd, format, size_len, arr_info[n]);
       }
-         //   symbols = output_string(wnd, format, size_len, arr_info[n]);
+      //   symbols = output_string(wnd, format, size_len, arr_info[n]);
       assert(symbols <= columns + 1);
     }
     if (number < rows) {
       for (; n < rows; n++) {
-        format[0]=' ';
+        format[0] = ' ';
         symbols = wprintw(wnd, format, " ", " ", " ");
         assert(symbols <= columns + 1);
       }
     }
   }
   // wprintw(wnd, "format: %s;   symbols==%d", format, symbols);
+}
+
+void draw_horizontal_line(WINDOW *window, unsigned columns, char symbol) {
+  for (unsigned i = 0; i < columns; i++) {
+    wprintw(window, "%c", symbol);
+  }
+  // wprintw(window, "\n");
+}
+
+const char *make_short_dirname(const char *fullname, unsigned length) {
+  unsigned length_full = strlen(fullname);
+  const char *result;
+  if (length >= length_full) {
+    result = fullname;
+  } else {
+    result = fullname + length_full - length;
+  }
+  return result;
 }

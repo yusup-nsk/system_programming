@@ -31,7 +31,7 @@ int my_compar(const struct dirent **de1, const struct dirent **de2) {
 
 int get_dir_info(const char *fulldirname, Info *arr_info,
                  unsigned *ptr_number) {
-                  *ptr_number=0;
+  *ptr_number = 0;
   struct dirent **namelist;
   int number = scandir(fulldirname, &namelist, my_filter, my_compar);
   if (number == -1) {
@@ -58,20 +58,20 @@ int get_dir_info(const char *fulldirname, Info *arr_info,
     if (stat(s, &file_stat) == -1) {
       // char str_err[LEN] = "error in stat() for directory ";
       // strncat(str_err, s, LEN);
-      //perror(str_err);
+      // perror(str_err);
       // perror(s);
 
-     // continue;
-     // return -1;
+      // continue;
+      // return -1;
 
- strftime(str_time, sizeof(str_time), "%d %h %H:%M", now);
-        strncpy(arr_info[n].name, namelist[n]->d_name, LEN);
-    strncpy(arr_info[n].time, str_time, LEN);
-    arr_info[n].size = 0; // file_stat.st_size;
-    arr_info[n].type = namelist[n]->d_type; 
-    continue;
+      strftime(str_time, sizeof(str_time), "%d %h %H:%M", now);
+      strncpy(arr_info[n].name, namelist[n]->d_name, LEN);
+      strncpy(arr_info[n].time, str_time, LEN);
+      arr_info[n].size = 0;  // file_stat.st_size;
+      arr_info[n].type = namelist[n]->d_type;
+      continue;
     }
-    
+
     time_t mtime = file_stat.st_mtim.tv_sec;
     struct tm *stime = localtime(&mtime);
 
@@ -84,9 +84,9 @@ int get_dir_info(const char *fulldirname, Info *arr_info,
     strncpy(arr_info[n].time, str_time, LEN);
     arr_info[n].size = file_stat.st_size;
     arr_info[n].type = namelist[n]->d_type;
-  //  *ptr_number += 1;
+    //  *ptr_number += 1;
   }
- *ptr_number = number;
+  *ptr_number = number;
   for (int i = 0; i < number; i++) free(namelist[i]);
   free(namelist);
   return n;
