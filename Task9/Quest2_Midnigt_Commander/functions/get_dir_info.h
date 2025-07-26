@@ -11,7 +11,7 @@
 
 #define T_LEN 13
 #define LEN 128
-#define MAX_FILES 256
+#define MAX_FILES 200
 
 typedef struct {
   char name[LEN];

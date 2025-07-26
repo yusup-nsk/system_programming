@@ -1,7 +1,11 @@
+//TODO при превышениии максимум файлов - переписать массив - файлы от 256 до 512
+
 #include <curses.h>
+#include <dirent.h>
 #include <signal.h>
 #include <sys/ioctl.h>
 #include <termios.h>
+#include <errno.h>
 
 #include "functions/get_dir_info.h"
 #include "functions/output_to_window.h"
@@ -18,6 +22,20 @@ void sig_winch(int signo) {
 
 enum { LEFT_WINDOW, RIGHT_WINDOW };
 
+void change_directory_up(char *fulldirname) {
+  if (strcmp(fulldirname, "/")) {
+    char *p = strrchr(fulldirname, '/');
+    if (p == fulldirname) {
+      p[1] = '\0';
+    } else
+      p[0] = '\0';
+  }
+}
+void change_directory(char *fulldirname, const char *directory) {
+  if (strcmp(fulldirname, "/")) strncat(fulldirname, "/", 2);
+  strncat(fulldirname, directory, LEN);
+}
+
 int main() {
   WINDOW *the_window[2];
   Info two_info_arrays[2][MAX_FILES];
@@ -26,7 +44,9 @@ int main() {
   int actual_window = LEFT_WINDOW;
   unsigned current_index[2] = {0, 0};
 
+  freopen("/dev/nul", "w", stderr);
   initscr();
+  
   signal(SIGWINCH, sig_winch);
   curs_set(TRUE);
   start_color();
@@ -46,22 +66,51 @@ int main() {
   pin_y[LEFT_WINDOW] = pin_y[RIGHT_WINDOW] = 1;
   for (int i = 0; i < 2; ++i) {
     the_window[i] = newwin(rows[i], cols[i], pin_y[i], pin_x[i]);
+    get_dir_info(dir_name[i], two_info_arrays[i], &num_records[i]);
+    wbkgd(the_window[i], COLOR_PAIR(2));
   }
-  get_dir_info(dir_name[LEFT_WINDOW], two_info_arrays[LEFT_WINDOW],
-               &num_records[LEFT_WINDOW]);
-  get_dir_info(dir_name[RIGHT_WINDOW], two_info_arrays[RIGHT_WINDOW],
-               &num_records[RIGHT_WINDOW]);
 
-  int ch;
+  int ch = ' ';
   while (ch != 'q' && ch != 'Q') {
     if (9 == ch) {  // TAB
       actual_window = !actual_window;
     } else if (KEY_UP == ch) {
       if (current_index[actual_window]) current_index[actual_window] -= 1;
+          mvprintw(rows[actual_window]-2, cols[actual_window]+1, "--%u--\n", current_index[actual_window]);
     } else if (KEY_DOWN == ch) {
-      if (current_index[actual_window] < rows[actual_window] - 1)
+      if (current_index[actual_window] < num_records[actual_window] - 1)
         current_index[actual_window] += 1;
+      mvprintw(rows[actual_window], cols[actual_window]+1, "++%u++\n", current_index[actual_window]);
+    } else if (KEY_ENTER == ch || '\n' == ch) {
+      if (current_index[actual_window] == 0) {
+        if (strcmp(dir_name[actual_window], "/"))
+          change_directory_up(dir_name[actual_window]);
+      } else {
+        if (two_info_arrays[actual_window][current_index[actual_window]].type ==
+            DT_DIR) {
+          change_directory(
+              dir_name[actual_window],
+              two_info_arrays[actual_window][current_index[actual_window]]
+                  .name);
+          current_index[actual_window] = 0;
+        }
+      }
+      if (get_dir_info(dir_name[actual_window], two_info_arrays[actual_window],
+                       &num_records[actual_window]) < 0) {
+       char str_err[LEN];
+       sprintf(str_err, "%s %d", __FILE__, __LINE__);
+       perror(str_err);
+       // exit(EXIT_FAILURE);
+       mvprintw(10, 45, "##%d##", errno);
+       if (errno== EACCES)  mvprintw(11, 45, "##EACCESS##");
+      }
+     // wprintw(the_window[actual_window], "==%s==\n", dir_name[actual_window]);
+      wrefresh(the_window[actual_window]);
+      //  sleep(1);
     }
+          mvprintw(rows[actual_window]-4, cols[actual_window]+1, "num_records==%u;   current==%u\n", num_records[actual_window],   current_index[actual_window]);
+
+    ch = ' ';
     if (g_chahged_screen_size) {
       g_chahged_screen_size = 0;
       delwin(the_window[LEFT_WINDOW]);
@@ -74,15 +123,22 @@ int main() {
       pin_y[LEFT_WINDOW] = pin_y[RIGHT_WINDOW] = 1;
       for (int i = 0; i < 2; ++i) {
         the_window[i] = newwin(rows[i], cols[i], pin_y[i], pin_x[i]);
+        wbkgd(the_window[i], COLOR_PAIR(2));
       }
     }
 
-    wbkgd(the_window[actual_window], COLOR_PAIR(2));
-    wprintw(the_window[actual_window], ".../%sn", dir_name[actual_window]);
-    wmove(the_window[actual_window], 3, pin_x[LEFT_WINDOW] + 1);
+    // wbkgd(the_window[actual_window], COLOR_PAIR(2));
+    wmove(the_window[actual_window], 0, 0);
+    wprintw(the_window[actual_window], "...%s\n", dir_name[actual_window]);
+    // wmove(the_window[actual_window], 3, pin_x[LEFT_WINDOW] + 1);
     output_to_window(the_window[actual_window], two_info_arrays[actual_window],
                      num_records[actual_window], rows[LEFT_WINDOW] - 5,
                      cols[LEFT_WINDOW] - 4, current_index[actual_window]);
+   
+   for(unsigned i=0; i<cols[actual_window]; i++) {                 wprintw(the_window[actual_window],"_");
+   }
+    wprintw(the_window[actual_window],"\n");
+    wprintw(the_window[actual_window], "%s\n", two_info_arrays[actual_window][current_index[actual_window] ].name );
     wrefresh(the_window[actual_window]);
     cbreak();
     ch = getch();

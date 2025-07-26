@@ -85,18 +85,22 @@ void output_to_window(WINDOW *wnd, const Info *arr_info, unsigned number,
     for (; n < number && n < rows; n++) {
       if (n == current_index) {
         wattron(wnd, A_BOLD);
+         symbols = output_string(wnd, format, size_len, arr_info[n]);
+          wattroff(wnd, A_BOLD);
       } else {
-        wattroff(wnd, A_BOLD);
+        // wattroff(wnd, A_BOLD);
+          symbols = output_string(wnd, format, size_len, arr_info[n]);
       }
-      symbols = output_string(wnd, format, size_len, arr_info[n]);
+         //   symbols = output_string(wnd, format, size_len, arr_info[n]);
       assert(symbols <= columns + 1);
     }
     if (number < rows) {
       for (; n < rows; n++) {
+        format[0]=' ';
         symbols = wprintw(wnd, format, " ", " ", " ");
         assert(symbols <= columns + 1);
       }
     }
   }
-  wprintw(wnd, "format: %s;   symbols==%d", format, symbols);
+  // wprintw(wnd, "format: %s;   symbols==%d", format, symbols);
 }
