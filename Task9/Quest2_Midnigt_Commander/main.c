@@ -31,12 +31,14 @@ int main() {
   curs_set(TRUE);
   start_color();
   cbreak();
+  noecho();
+  keypad(stdscr, TRUE);
   refresh();
   init_pair(1, COLOR_BLUE, COLOR_GREEN);
   init_pair(2, COLOR_YELLOW, COLOR_BLUE);
   struct winsize size;
   ioctl(fileno(stdout), TIOCGWINSZ, (char *)&size);
-  int rows[2], cols[2], pin_x[2], pin_y[2];
+  unsigned rows[2], cols[2], pin_x[2], pin_y[2];
   rows[LEFT_WINDOW] = rows[RIGHT_WINDOW] = size.ws_row - 2;
   cols[LEFT_WINDOW] = cols[RIGHT_WINDOW] = size.ws_col / 2 - 4;
   pin_x[LEFT_WINDOW] = 1;
@@ -50,10 +52,15 @@ int main() {
   get_dir_info(dir_name[RIGHT_WINDOW], two_info_arrays[RIGHT_WINDOW],
                &num_records[RIGHT_WINDOW]);
 
-  char ch;
+  int ch;
   while (ch != 'q' && ch != 'Q') {
     if (9 == ch) {  // TAB
       actual_window = !actual_window;
+    } else if (KEY_UP == ch) {
+      if (current_index[actual_window]) current_index[actual_window] -= 1;
+    } else if (KEY_DOWN == ch) {
+      if (current_index[actual_window] < rows[actual_window] - 1)
+        current_index[actual_window] += 1;
     }
     if (g_chahged_screen_size) {
       g_chahged_screen_size = 0;
@@ -61,7 +68,7 @@ int main() {
       delwin(the_window[RIGHT_WINDOW]);
       ioctl(fileno(stdout), TIOCGWINSZ, (char *)&size);
       rows[LEFT_WINDOW] = rows[RIGHT_WINDOW] = size.ws_row - 2;
-      cols[LEFT_WINDOW] = cols[RIGHT_WINDOW] = size.ws_col / 2 - 4;
+      cols[LEFT_WINDOW] = cols[RIGHT_WINDOW] = size.ws_col / 2 - 2;
       pin_x[LEFT_WINDOW] = 1;
       pin_x[RIGHT_WINDOW] = cols[LEFT_WINDOW] + pin_x[LEFT_WINDOW] + 2;
       pin_y[LEFT_WINDOW] = pin_y[RIGHT_WINDOW] = 1;
@@ -71,15 +78,11 @@ int main() {
     }
 
     wbkgd(the_window[actual_window], COLOR_PAIR(2));
-    box(the_window[actual_window], '|', '-');
-    wattron(the_window[actual_window], A_BOLD);
-    keypad(the_window[actual_window], TRUE);
-    wprintw(the_window[actual_window], "Enter password...\n");
+    wprintw(the_window[actual_window], ".../%sn", dir_name[actual_window]);
     wmove(the_window[actual_window], 3, pin_x[LEFT_WINDOW] + 1);
     output_to_window(the_window[actual_window], two_info_arrays[actual_window],
                      num_records[actual_window], rows[LEFT_WINDOW] - 5,
                      cols[LEFT_WINDOW] - 4, current_index[actual_window]);
-    refresh();
     wrefresh(the_window[actual_window]);
     cbreak();
     ch = getch();
@@ -88,7 +91,6 @@ int main() {
   delwin(the_window[RIGHT_WINDOW]);
   curs_set(FALSE);
   refresh();
-  // getch();
   endwin();
   exit(EXIT_SUCCESS);
 }

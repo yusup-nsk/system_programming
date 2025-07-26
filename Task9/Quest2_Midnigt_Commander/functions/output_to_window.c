@@ -40,11 +40,22 @@ int make_string_for_size_column(char *str_size, unsigned size_len,
   return symbols;
 }
 
+unsigned output_string(WINDOW *wnd, char *format, unsigned size_len,
+                       Info info) {
+  char str_size[LEN];
+  unsigned symbols;
+  make_string_for_size_column(str_size, size_len, info.size);
+  format[0] = (info.type == DT_DIR) ? '/' : ' ';
+  symbols = wprintw(wnd, format, info.name, str_size, info.time);
+  return symbols;
+}
+
 void output_to_window(WINDOW *wnd, const Info *arr_info, unsigned number,
                       unsigned rows, unsigned columns, unsigned current_index) {
   if (NULL == arr_info || 0 == number || 0 == rows) return;
   unsigned min_name_len = 12, min_size_len = 7, min_time_len = 12;
   unsigned name_len = 12, size_len = 7, time_len = 12;
+  wattroff(wnd, A_BOLD);
   if (name_len + size_len + time_len <= columns - 3) {
     name_len = columns - 3 - size_len - time_len;
   } else {
@@ -57,36 +68,33 @@ void output_to_window(WINDOW *wnd, const Info *arr_info, unsigned number,
   if (current_index > number - 1) current_index = number - 1;
   char format[LEN];
   unsigned symbols;
-  char str_size[T_LEN];
   sprintf(format, " %%-%u.%us|%%%u.%us|%%-%u.%us\n", name_len, name_len,
           size_len, size_len, time_len, time_len);
   unsigned n = 0;
   if (current_index > rows - 1) {
     n = current_index - rows + 1;
-    for (; n <= current_index; n++) {
-      symbols =
-          make_string_for_size_column(str_size, size_len, arr_info[n].size);
-      format[0] = (arr_info[n].type == DT_DIR) ? '/' : ' ';
-      symbols =
-          wprintw(wnd, format, arr_info[n].name, str_size, arr_info[n].time);
+    for (; n < current_index; n++) {
+      symbols = output_string(wnd, format, size_len, arr_info[n]);
       assert(symbols <= columns + 1);
     }
+    wattron(wnd, A_BOLD);
+    symbols = output_string(wnd, format, size_len, arr_info[n]);
+    wattroff(wnd, A_BOLD);
+    assert(symbols <= columns + 1);
   } else {
     for (; n < number && n < rows; n++) {
-      symbols =
-          make_string_for_size_column(str_size, size_len, arr_info[n].size);
-      format[0] = (arr_info[n].type == DT_DIR) ? '/' : ' ';
-      symbols =
-          wprintw(wnd, format, arr_info[n].name, str_size, arr_info[n].time);
-      // assert(symbols <= columns + 1);
+      if (n == current_index) {
+        wattron(wnd, A_BOLD);
+      } else {
+        wattroff(wnd, A_BOLD);
+      }
+      symbols = output_string(wnd, format, size_len, arr_info[n]);
+      assert(symbols <= columns + 1);
     }
     if (number < rows) {
       for (; n < rows; n++) {
-        symbols =
-            make_string_for_size_column(str_size, size_len, arr_info[n].size);
-        format[0] = (arr_info[n].type == DT_DIR) ? '/' : ' ';
         symbols = wprintw(wnd, format, " ", " ", " ");
-        // assert(symbols <= columns + 1);
+        assert(symbols <= columns + 1);
       }
     }
   }

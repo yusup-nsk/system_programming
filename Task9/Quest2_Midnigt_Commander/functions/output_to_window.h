@@ -2,6 +2,7 @@
 #define _OUTPUT_TO_WINDOW_H_
 
 #include <curses.h>
+#include <termios.h>
 
 #include "get_dir_info.h"
 
