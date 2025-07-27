@@ -50,8 +50,87 @@ unsigned output_string(WINDOW *wnd, char *format, unsigned size_len,
   return symbols;
 }
 
-void output_info(WINDOW *wnd, const Info *arr_info, unsigned number,
-                 unsigned rows, unsigned columns, unsigned current_index) {
+// void output_info(WINDOW *wnd, const Info *arr_info, unsigned number,
+//                  unsigned rows, unsigned columns, unsigned current_index) {
+//   if (NULL == arr_info || 0 == number || 0 == rows) return;
+//   unsigned min_name_len = 12, min_size_len = 7, min_time_len = 12;
+//   unsigned name_len = 12, size_len = 7, time_len = 12;
+//   wattroff(wnd, A_BOLD);
+//   if (name_len + size_len + time_len <= columns - 3) {
+//     name_len = columns - 3 - size_len - time_len;
+//   } else {
+//     size_len =
+//         ((columns - 3.0) * 7.0 / (min_name_len + min_size_len +
+//         min_time_len));
+//     time_len =
+//         ((columns - 3.0) * 12.0 / (min_name_len + min_size_len +
+//         min_time_len));
+//     name_len = columns - 3 - size_len - time_len;
+//   }
+//   if (current_index > number - 1) current_index = number - 1;
+//   char format[LEN];
+//   unsigned symbols;
+//   sprintf(format, " %%-%u.%us|%%%u.%us|%%-%u.%us\n", name_len, name_len,
+//           size_len, size_len, time_len, time_len);
+//   wattron(wnd, A_BOLD);
+//   wprintw(wnd, format, " NAME ", " SIZE ", " TIME ");
+//   wattroff(wnd, A_BOLD);
+//   unsigned n = 0;
+//   if (current_index > rows - 1) {
+//     n = current_index - rows + 1;
+//     for (; n < current_index; n++) {
+//       symbols = output_string(wnd, format, size_len, arr_info[n]);
+//       assert(symbols <= columns + 1);
+//     }
+//     wattron(wnd, A_BOLD);
+//     symbols = output_string(wnd, format, size_len, arr_info[n]);
+//     wattroff(wnd, A_BOLD);
+//     assert(symbols <= columns + 1);
+//   } else {
+//     for (; n < number && n < rows; n++) {
+//       if (n == current_index) {
+//         wattron(wnd, A_BOLD);
+//         symbols = output_string(wnd, format, size_len, arr_info[n]);
+//         wattroff(wnd, A_BOLD);
+//       } else {
+//         symbols = output_string(wnd, format, size_len, arr_info[n]);
+//       }
+//       assert(symbols <= columns + 1);
+//     }
+//     if (number < rows) {
+//       for (; n < rows; n++) {
+//         format[0] = ' ';
+//         symbols = wprintw(wnd, format, " ", " ", " ");
+//         assert(symbols <= columns + 1);
+//       }
+//     }
+//   }
+//   // wprintw(wnd, "format: %s;   symbols==%d", format, symbols);
+// }
+
+void draw_horizontal_line(WINDOW *window, unsigned columns, char symbol) {
+  for (unsigned i = 0; i < columns; i++) {
+    wprintw(window, "%c", symbol);
+  }
+  // wprintw(window, "\n");
+}
+
+const char *make_short_dirname(const char *fullname, unsigned length) {
+  unsigned length_full = strlen(fullname);
+  const char *result;
+  if (length >= length_full) {
+    result = fullname;
+  } else {
+    result = fullname + length_full - length;
+  }
+  return result;
+}
+
+void output_info_frame(WINDOW *wnd, const Info *arr_info, Frame frame) {
+  unsigned number = frame.number_of_records;
+  unsigned rows = frame.rows - 5;
+  unsigned columns = frame.columns - 1;
+  unsigned current_index = frame.index_current;
   if (NULL == arr_info || 0 == number || 0 == rows) return;
   unsigned min_name_len = 12, min_size_len = 7, min_time_len = 12;
   unsigned name_len = 12, size_len = 7, time_len = 12;
@@ -103,25 +182,6 @@ void output_info(WINDOW *wnd, const Info *arr_info, unsigned number,
       }
     }
   }
-  // wprintw(wnd, "format: %s;   symbols==%d", format, symbols);
-}
-
-void draw_horizontal_line(WINDOW *window, unsigned columns, char symbol) {
-  for (unsigned i = 0; i < columns; i++) {
-    wprintw(window, "%c", symbol);
-  }
-  // wprintw(window, "\n");
-}
-
-const char *make_short_dirname(const char *fullname, unsigned length) {
-  unsigned length_full = strlen(fullname);
-  const char *result;
-  if (length >= length_full) {
-    result = fullname;
-  } else {
-    result = fullname + length_full - length;
-  }
-  return result;
 }
 
 void output_a_window(WINDOW *win, Frame frame, const Info *info) {
@@ -130,10 +190,11 @@ void output_a_window(WINDOW *win, Frame frame, const Info *info) {
   draw_horizontal_line(win, frame.columns, '-');
   wmove(win, 0, 0);
   wprintw(win, "<-...%s",
-          make_short_dirname(frame.directory_name, frame.columns - 7));
+          make_short_dirname(frame.directory_name, frame.columns - 6));
   wmove(win, 1, 0);
-  output_info(win, info, frame.number_of_records, frame.rows - 5,
-              frame.columns - 4, frame.index_current);
+  output_info_frame(win, info, frame);
+  // output_info(win, info, frame.number_of_records, frame.rows - 5,
+  //             frame.columns - 4, frame.index_current);
   draw_horizontal_line(win, frame.columns, '-');
 
   if (frame.index_current) {

@@ -32,7 +32,8 @@ int main() {
   keypad(stdscr, TRUE);
   refresh();
   init_pair(1, COLOR_YELLOW, COLOR_BLUE);
-  init_pair(2, COLOR_RED, COLOR_BLACK);
+  init_pair(2, COLOR_YELLOW, COLOR_GREEN);
+  // init_pair(2, COLOR_RED, COLOR_BLACK);
 
   windows_initiation(the_window, the_frame);
   for (int i = 0; i < 2; ++i) {
@@ -97,13 +98,22 @@ int main() {
       }
       wrefresh(the_window[actual_window]);
     }
-    // ch = ' ';
     if (g_chahged_screen_size) {
       g_chahged_screen_size = 0;
+      unsigned index_curr[2];
+      for (unsigned i = 0; i < 2; ++i)
+        index_curr[i] = the_frame[i].index_current;
       delwin(the_window[LEFT_WINDOW]);
       delwin(the_window[RIGHT_WINDOW]);
       erase();
+      refresh();
       windows_initiation(the_window, the_frame);
+      for (unsigned i = 0; i < 2; ++i) {
+        the_frame[i].index_current = index_curr[i];
+        output_a_window(the_window[i], the_frame[i], info_arrays[i]);
+      }
+      ch = ' ';
+      continue;
     }
     output_a_window(the_window[actual_window], the_frame[actual_window],
                     info_arrays[actual_window]);
