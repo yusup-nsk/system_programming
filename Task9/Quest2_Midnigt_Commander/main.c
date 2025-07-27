@@ -23,6 +23,14 @@ void sig_winch(int signo) {
 
 enum { LEFT_WINDOW, RIGHT_WINDOW };
 
+typedef struct {
+  char directory_name[LEN];
+  unsigned number_of_records;
+  unsigned index_current;
+  unsigned rows;
+  unsigned columns;
+} Frame;
+
 void change_directory_up(char *fulldirname) {
   if (strcmp(fulldirname, "/")) {
     char *p = strrchr(fulldirname, '/');
@@ -38,10 +46,10 @@ void change_directory(char *fulldirname, const char *directory) {
   strncat(fulldirname, directory, LEN);
 }
 
-void initiation_windows(WINDOW *the_window[2], unsigned rows[2],
-                        unsigned cols[2]) {
-  struct winsize size;
+void windows_initiation(WINDOW *the_window[2], Frame the_frame[2]) {
+   struct winsize size;
   unsigned pin_x[2], pin_y[2];
+  unsigned rows[2], cols[2];
   ioctl(fileno(stdout), TIOCGWINSZ, (char *)&size);
   rows[LEFT_WINDOW] = rows[RIGHT_WINDOW] = size.ws_row - 1;
   cols[LEFT_WINDOW] = cols[RIGHT_WINDOW] = size.ws_col / 2 - 1;
@@ -49,31 +57,22 @@ void initiation_windows(WINDOW *the_window[2], unsigned rows[2],
   pin_x[RIGHT_WINDOW] = cols[LEFT_WINDOW] + pin_x[LEFT_WINDOW] + 2;
   pin_y[LEFT_WINDOW] = pin_y[RIGHT_WINDOW] = 0;
   for (int i = 0; i < 2; ++i) {
+    the_frame[i].index_current = 0;
+    the_frame[i].rows = rows[i];
+    the_frame[i].columns = cols[i];
     the_window[i] = newwin(rows[i], cols[i], pin_y[i], pin_x[i]);
-    wbkgd(the_window[i], COLOR_PAIR(2));
+    wbkgd(the_window[i], COLOR_PAIR(1));
   }
 }
-
-typedef struct {
-  char directory_name[LEN];
-  unsigned number_of_records;
-  unsigned index_current;
-  unsigned rows;
-  unsigned columns;
-} Frame;
 
 int main() {
   WINDOW *the_window[2], win;
   Frame the_frame[2], frame;
-  unsigned rows[2], cols[2];
   Info info_arrays[2][MAX_FILES];
-  // Info header = {" ", " "}
-  char dir_name[2][LEN] = {"/", "/"};
-  unsigned num_records[2];
+  strncpy(the_frame[LEFT_WINDOW].directory_name, "/", 2);
+  strncpy(the_frame[RIGHT_WINDOW].directory_name, "/", 2);
   int actual_window = LEFT_WINDOW;
-  unsigned current_index[2] = {0, 0};
-
-  freopen("/dev/nul", "w", stderr);
+ // freopen("/dev/nul", "w", stderr);
   initscr();
   // chtype chtp;
   signal(SIGWINCH, sig_winch);
@@ -83,55 +82,48 @@ int main() {
   noecho();
   keypad(stdscr, TRUE);
   refresh();
-  init_pair(1, COLOR_BLUE, COLOR_GREEN);
+  init_pair(1, COLOR_YELLOW, COLOR_BLUE);
   init_pair(2, COLOR_YELLOW, COLOR_BLUE);
 
-  initiation_windows(the_window, rows, cols);
+  windows_initiation(the_window, the_frame);
   for (int i = 0; i < 2; ++i) {
-    get_dir_info(dir_name[i], info_arrays[i], &num_records[i]);
+    get_dir_info(the_frame[i].directory_name, info_arrays[i],
+                 &(the_frame[i].number_of_records));
   }
-  int ch = ' ';
+  // int ch = ' ';
+   chtype ch = ' ';
   while (ch != 'q' && ch != 'Q') {
     if (9 == ch) {  // TAB
       actual_window = !actual_window;
     } else if (KEY_UP == ch) {
-      if (current_index[actual_window]) current_index[actual_window] -= 1;
-      //  mvprintw(rows[actual_window] - 2, cols[actual_window] + 1, "--%u--\n",
-      //      current_index[actual_window]);
+      if (the_frame[actual_window].index_current) the_frame[actual_window].index_current -= 1;
     } else if (KEY_DOWN == ch) {
-      if (current_index[actual_window] < num_records[actual_window] - 1)
-        current_index[actual_window] += 1;
-      //   mvprintw(rows[actual_window], cols[actual_window] + 1, "++%u++\n",
-      //    current_index[actual_window]);
+      if (the_frame[actual_window].index_current < the_frame[actual_window].number_of_records - 1)
+       the_frame[actual_window].index_current += 1;
     } else if (KEY_ENTER == ch || '\n' == ch) {
-      if (current_index[actual_window] == 0) {
-        if (strcmp(dir_name[actual_window], "/"))
-          change_directory_up(dir_name[actual_window]);
+      if (the_frame[actual_window].index_current == 0) {
+        if (strcmp(the_frame[actual_window].directory_name , "/"))
+           change_directory_up(the_frame[actual_window].directory_name);
       } else {
-        if (info_arrays[actual_window][current_index[actual_window]].type ==
+        if (info_arrays[actual_window][the_frame[actual_window].index_current].type ==
             DT_DIR) {
-          change_directory(
-              dir_name[actual_window],
-              info_arrays[actual_window][current_index[actual_window]].name);
-          current_index[actual_window] = 0;
+                 change_directory(
+              the_frame[actual_window].directory_name, 
+              info_arrays[actual_window][the_frame[actual_window].index_current].name);
+ 
+          the_frame[actual_window].index_current = 0;
         }
       }
-      if (get_dir_info(dir_name[actual_window], info_arrays[actual_window],
-                       &num_records[actual_window]) < 0) {
+      if (get_dir_info(the_frame[actual_window].directory_name, info_arrays[actual_window],
+                       &(the_frame[actual_window].number_of_records)) < 0) {
         char str_err[LEN];
         sprintf(str_err, "%s %d", __FILE__, __LINE__);
         perror(str_err);
-        // exit(EXIT_FAILURE);
         mvprintw(10, 45, "##%d##", errno);
         if (errno == EACCES) mvprintw(11, 45, "##EACCESS##");
       }
-      // wprintw(the_window[actual_window], "==%s==\n",
-      // dir_name[actual_window]);
       wrefresh(the_window[actual_window]);
-      //  sleep(1);
     }
-    // mvprintw(rows[actual_window] - 1, 1, "num_records==%u;   current==%u\n",
-    //          num_records[actual_window], current_index[actual_window]);
 
     ch = ' ';
     if (g_chahged_screen_size) {
@@ -139,23 +131,23 @@ int main() {
       delwin(the_window[LEFT_WINDOW]);
       delwin(the_window[RIGHT_WINDOW]);
       erase();
-      initiation_windows(the_window, rows, cols);
+      windows_initiation(the_window, the_frame);
     }
     werase(the_window[actual_window]);
     wmove(the_window[actual_window], 0, 0);
-    draw_horizontal_line(the_window[actual_window], cols[actual_window], '-');
+    draw_horizontal_line(the_window[actual_window], the_frame[actual_window].columns, '-');
     wmove(the_window[actual_window], 0, 0);
     wprintw(
         the_window[actual_window], "<-...%s",
-        make_short_dirname(dir_name[actual_window], cols[actual_window] - 7));
+        make_short_dirname(the_frame[actual_window].directory_name, the_frame[actual_window].columns - 7));
     wmove(the_window[actual_window], 1, 0);
     output_to_window(the_window[actual_window], info_arrays[actual_window],
-                     num_records[actual_window], rows[LEFT_WINDOW] - 5,
-                     cols[LEFT_WINDOW] - 4, current_index[actual_window]);
-    draw_horizontal_line(the_window[actual_window], cols[actual_window], '-');
+                    the_frame[actual_window].number_of_records, the_frame[actual_window].rows- 5,
+                    the_frame[actual_window].columns - 4, the_frame[actual_window].index_current);
+    draw_horizontal_line(the_window[actual_window], the_frame[actual_window].columns, '-');
 
     wprintw(the_window[actual_window], "%s\n",
-            info_arrays[actual_window][current_index[actual_window]].name);
+            info_arrays[actual_window][the_frame[actual_window].index_current].name);
     wrefresh(the_window[actual_window]);
     cbreak();
     ch = getch();

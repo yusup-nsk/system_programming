@@ -91,10 +91,8 @@ void output_to_window(WINDOW *wnd, const Info *arr_info, unsigned number,
         symbols = output_string(wnd, format, size_len, arr_info[n]);
         wattroff(wnd, A_BOLD);
       } else {
-        // wattroff(wnd, A_BOLD);
         symbols = output_string(wnd, format, size_len, arr_info[n]);
       }
-      //   symbols = output_string(wnd, format, size_len, arr_info[n]);
       assert(symbols <= columns + 1);
     }
     if (number < rows) {
