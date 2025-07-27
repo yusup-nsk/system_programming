@@ -50,8 +50,8 @@ unsigned output_string(WINDOW *wnd, char *format, unsigned size_len,
   return symbols;
 }
 
-void output_to_window(WINDOW *wnd, const Info *arr_info, unsigned number,
-                      unsigned rows, unsigned columns, unsigned current_index) {
+void output_info(WINDOW *wnd, const Info *arr_info, unsigned number,
+                 unsigned rows, unsigned columns, unsigned current_index) {
   if (NULL == arr_info || 0 == number || 0 == rows) return;
   unsigned min_name_len = 12, min_size_len = 7, min_time_len = 12;
   unsigned name_len = 12, size_len = 7, time_len = 12;
@@ -122,4 +122,24 @@ const char *make_short_dirname(const char *fullname, unsigned length) {
     result = fullname + length_full - length;
   }
   return result;
+}
+
+void output_a_window(WINDOW *win, Frame frame, const Info *info) {
+  werase(win);
+  wmove(win, 0, 0);
+  draw_horizontal_line(win, frame.columns, '-');
+  wmove(win, 0, 0);
+  wprintw(win, "<-...%s",
+          make_short_dirname(frame.directory_name, frame.columns - 7));
+  wmove(win, 1, 0);
+  output_info(win, info, frame.number_of_records, frame.rows - 5,
+              frame.columns - 4, frame.index_current);
+  draw_horizontal_line(win, frame.columns, '-');
+
+  if (frame.index_current) {
+    wprintw(win, "%s\n", info[frame.index_current].name);
+  } else {
+    wprintw(win, "--UP--\n");
+  }
+  wrefresh(win);
 }
