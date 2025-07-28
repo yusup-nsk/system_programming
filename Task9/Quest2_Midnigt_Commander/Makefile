@@ -4,6 +4,7 @@ CURSES_FLAG := -lncurses
 EXECUTABLE := mycommander
 
 run: clean exe
+	make format
 	./$(EXECUTABLE)
 exe:
 	$(CC) $(CFLAGS) -c functions/*.c  $(CURSES_FLAG)
@@ -17,3 +18,5 @@ cleano:
 
 clean: cleano
 	rm -f $(EXECUTABLE) a.out
+
+.PHONY: clean exe format cleano

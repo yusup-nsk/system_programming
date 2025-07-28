@@ -107,15 +107,15 @@ void windows_initiation(WINDOW *the_window[2], Frame the_frame[2]) {
   ioctl(fileno(stdout), TIOCGWINSZ, (char *)&size);
   mvprintw(size.ws_row - 1, 0, "Press <Esc> for exit");
   wattroff(stdscr, A_BOLD);
-  if (size.ws_row<10){
-    rows[LEFT_WINDOW] = rows[RIGHT_WINDOW] = MINIMUM_ROWS -2;
+  if (size.ws_row < 10) {
+    rows[LEFT_WINDOW] = rows[RIGHT_WINDOW] = MINIMUM_ROWS - 2;
   } else {
-     rows[LEFT_WINDOW] = rows[RIGHT_WINDOW] = size.ws_row - 2;
+    rows[LEFT_WINDOW] = rows[RIGHT_WINDOW] = size.ws_row - 2;
   }
-  if (size.ws_col <38){
-    cols[LEFT_WINDOW] = cols[RIGHT_WINDOW] = MINIMUM_COLUMNS/2-1;
+  if (size.ws_col < 38) {
+    cols[LEFT_WINDOW] = cols[RIGHT_WINDOW] = MINIMUM_COLUMNS / 2 - 1;
   } else {
-      cols[LEFT_WINDOW] = cols[RIGHT_WINDOW] = size.ws_col / 2 - 1;
+    cols[LEFT_WINDOW] = cols[RIGHT_WINDOW] = size.ws_col / 2 - 1;
   }
   pin_x[LEFT_WINDOW] = 0;
   pin_x[RIGHT_WINDOW] = cols[LEFT_WINDOW] + pin_x[LEFT_WINDOW] + 2;

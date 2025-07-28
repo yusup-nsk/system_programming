@@ -21,8 +21,8 @@ int main() {
   Info info_arrays[2][MAX_FILES];
   strncpy(the_frame[LEFT_WINDOW].directory_name, "/", 2);
   strncpy(the_frame[RIGHT_WINDOW].directory_name, "/", 2);
-  int actual_window = LEFT_WINDOW;
-  freopen("/dev/nul", "w", stderr);
+  unsigned actual_window = LEFT_WINDOW;
+  // freopen("/dev/nul", "w", stderr);
   initscr();
   signal(SIGWINCH, sig_winch);
   curs_set(FALSE);
@@ -40,9 +40,12 @@ int main() {
     get_dir_info(the_frame[i].directory_name, info_arrays[i],
                  &(the_frame[i].number_of_records));
   }
-  chtype ch = ' ';
-  while (27 != ch) {
-    if (9 == ch) {  // TAB
+  int ch = ' ';
+  while (ESCAPE_KEY != ch) {
+    if (TABULATION_KEY == ch) {  // TAB
+      output_the_win(the_window[actual_window], the_frame[actual_window],
+                     info_arrays[actual_window], 0);
+      wrefresh(the_window[actual_window]);
       actual_window = !actual_window;
     } else if (KEY_UP == ch) {
       if (the_frame[actual_window].index_current)
@@ -110,13 +113,14 @@ int main() {
       windows_initiation(the_window, the_frame);
       for (unsigned i = 0; i < 2; ++i) {
         the_frame[i].index_current = index_curr[i];
-        output_a_window(the_window[i], the_frame[i], info_arrays[i]);
+        output_the_win(the_window[actual_window], the_frame[actual_window],
+                       info_arrays[actual_window], i == actual_window);
       }
       ch = ' ';
       continue;
     }
-    output_a_window(the_window[actual_window], the_frame[actual_window],
-                    info_arrays[actual_window]);
+    output_the_win(the_window[actual_window], the_frame[actual_window],
+                   info_arrays[actual_window], 1U);
     ch = getch();
   }  // while ch != <ESC>
   delwin(the_window[LEFT_WINDOW]);

@@ -2,25 +2,25 @@
 #define _GET_DIR_INFO_H_
 
 #include <assert.h>
+#include <curses.h>
 #include <dirent.h>
+#include <errno.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <time.h>
-
-// #include <ncurses.h>
-#include <curses.h>
-#include <errno.h>
-#include <signal.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <termios.h>
+#include <time.h>
 
 #define T_LEN 13
 #define LEN 128
 #define MAX_FILES 256
 #define MINIMUM_ROWS 10
 #define MINIMUM_COLUMNS 40
+#define TABULATION_KEY 9
+#define ESCAPE_KEY 27
 
 typedef struct {
   char name[LEN];
