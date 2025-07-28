@@ -128,3 +128,5 @@ void windows_initiation(WINDOW *the_window[2], Frame the_frame[2]) {
     wbkgd(the_window[i], COLOR_PAIR(1));
   }
 }
+
+//============================================

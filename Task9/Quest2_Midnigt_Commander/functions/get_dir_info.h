@@ -1,7 +1,6 @@
 #ifndef _GET_DIR_INFO_H_
 #define _GET_DIR_INFO_H_
 
-#include <assert.h>
 #include <curses.h>
 #include <dirent.h>
 #include <errno.h>
@@ -41,10 +40,11 @@ typedef struct {
 
 int my_filter(const struct dirent *name);
 int my_compar(const struct dirent **de1, const struct dirent **de2);
-int get_dir_info(const char *fulldirname, Info *arr_info, unsigned *number);
 int try_to_change_directory(char *fulldirname, const char *directory);
 void windows_initiation(WINDOW *the_window[2], Frame the_frame[2]);
 void change_directory(char *fulldirname, const char *directory);
 void change_directory_up(char *fulldirname);
+int get_dir_info(const char *fulldirname, Info *arr_info, unsigned *number);
+int get_dir_info2(const char *fulldirname, Info *arr_info, unsigned *number);
 
 #endif

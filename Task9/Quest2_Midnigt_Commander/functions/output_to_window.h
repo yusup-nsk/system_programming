@@ -12,4 +12,7 @@ void draw_horizontal_line(WINDOW *window, unsigned columns, char symbol);
 const char *make_short_dirname(const char *fullname, unsigned length);
 void output_the_win(WINDOW *win, Frame frame, const Info *info,
                     unsigned actual);
+void enter_to_directory(Frame *frame, Info *info);
+void process_change_screen_size(WINDOW **window, Frame *frame,
+                                Info info[2][MAX_FILES], unsigned actual);
 #endif
