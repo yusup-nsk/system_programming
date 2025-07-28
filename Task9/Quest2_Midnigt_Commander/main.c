@@ -3,15 +3,6 @@
 
 int g_chahged_screen_size = 0;
 
-void sig_winch(int signo) {
-  if (SIGWINCH == signo) {
-    struct winsize size;
-    ioctl(fileno(stdout), TIOCGWINSZ, (char *)&size);
-    resizeterm(size.ws_row, size.ws_col);
-    g_chahged_screen_size++;
-  }
-}
-
 int main() {
   WINDOW *the_window[2];
   Frame the_frame[2];
@@ -19,7 +10,7 @@ int main() {
   strncpy(the_frame[LEFT_WINDOW].directory_name, "/", 2);
   strncpy(the_frame[RIGHT_WINDOW].directory_name, "/", 2);
   unsigned actual_window = LEFT_WINDOW;
-  freopen("/dev/nul", "w", stderr);
+  FILE *errors_log = freopen("errors.log", "w", stderr);
   initscr();
   signal(SIGWINCH, sig_winch);
   curs_set(FALSE);
@@ -36,9 +27,9 @@ int main() {
     output_the_win(the_window[i], the_frame[i], info_arrays[i],
                    i == actual_window);
   }
-  int ch = ' ';
+  int ch;
   while ((ch = getch()) != ESCAPE_KEY) {
-    if (TABULATION_KEY == ch) {  // TAB
+    if (TABULATION_KEY == ch) {
       output_the_win(the_window[actual_window], the_frame[actual_window],
                      info_arrays[actual_window], 0);
       wrefresh(the_window[actual_window]);
@@ -79,5 +70,6 @@ int main() {
   delwin(the_window[LEFT_WINDOW]);
   delwin(the_window[RIGHT_WINDOW]);
   endwin();
+  if (errors_log) fclose(errors_log);
   exit(EXIT_SUCCESS);
 }

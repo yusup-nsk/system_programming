@@ -32,7 +32,6 @@ int make_string_for_size_column(char *str_size, unsigned size_len,
           symbols = sprintf(str_size, "~G");
       }
       if (symbols > size_len) {
-        size = size >> 10;
         symbols = sprintf(str_size, "~G");
       }
     }
@@ -71,12 +70,12 @@ void output_info_frame(WINDOW *wnd, const Info *arr_info, Frame frame,
   unsigned columns = frame.columns - 1;
   unsigned current_index = frame.index_current;
   if (NULL == arr_info || 0 == number || 0 == rows) return;
-  unsigned min_name_len = 12, min_size_len = 7, min_time_len = 12;
   unsigned name_len = 12, size_len = 7, time_len = 12;
   wattroff(wnd, A_BOLD);
   if (name_len + size_len + time_len <= columns - 3) {
     name_len = columns - 3 - size_len - time_len;
   } else {
+    unsigned min_name_len = 12, min_size_len = 7, min_time_len = 12;
     size_len =
         ((columns - 3.0) * 7.0 / (min_name_len + min_size_len + min_time_len));
     time_len =

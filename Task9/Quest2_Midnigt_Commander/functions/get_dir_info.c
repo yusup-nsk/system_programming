@@ -1,5 +1,14 @@
 #include "get_dir_info.h"
 
+void sig_winch(int signo) {
+  if (SIGWINCH == signo) {
+    struct winsize size;
+    ioctl(fileno(stdout), TIOCGWINSZ, (char *)&size);
+    resizeterm(size.ws_row, size.ws_col);
+    g_chahged_screen_size++;
+  }
+}
+
 int my_filter(const struct dirent *name) { return strcmp(name->d_name, "."); }
 
 int my_compar(const struct dirent **de1, const struct dirent **de2) {
@@ -18,15 +27,6 @@ int my_compar(const struct dirent **de1, const struct dirent **de2) {
   return res;
 }
 
-void make_full_filename(char *fulldirname, char *name, char *full_filename) {
-  if (strcmp(name, "/")) {
-    strncpy(full_filename, fulldirname, LEN);
-    strncat(full_filename, "/", 2);
-    strncat(full_filename, name, LEN);
-  } else
-    strncpy(full_filename, fulldirname, LEN);
-}
-
 int try_to_change_directory(char *fulldirname, const char *directory) {
   char str[LEN];
   strncpy(str, fulldirname, LEN);
@@ -43,7 +43,7 @@ int get_dir_info(const char *fulldirname, Info *arr_info,
   int number = scandir(fulldirname, &namelist, my_filter, my_compar);
   if (number == -1) {
     char str_err[LEN];
-    sprintf(str_err, "scandir error in directory %s", fulldirname);
+    sprintf(str_err, "scandir error for directory %s", fulldirname);
     perror(str_err);
     return -1;
   }
@@ -105,7 +105,9 @@ void windows_initiation(WINDOW *the_window[2], Frame the_frame[2]) {
   unsigned pin_x[2], pin_y[2];
   unsigned rows[2], cols[2];
   ioctl(fileno(stdout), TIOCGWINSZ, (char *)&size);
-  mvprintw(size.ws_row - 1, 0, "Press <Esc> for exit");
+  mvprintw(size.ws_row - 1, 0,
+           "<Esc>:exit   <Tab>:change window   <Enter>:open direcrory   "
+           "Arrows<Up><Down>:scroll list");
   wattroff(stdscr, A_BOLD);
   if (size.ws_row < 10) {
     rows[LEFT_WINDOW] = rows[RIGHT_WINDOW] = MINIMUM_ROWS - 2;

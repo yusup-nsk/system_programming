@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -Wall -Werror -Wextra -pedantic
+CFLAGS := -Wall -Werror -Wextra -pedantic -g
 CURSES_FLAG := -lncurses
 EXECUTABLE := mycommander
 
@@ -15,10 +15,13 @@ exe:
 format:
 	clang-format --style=Google -i *.[ch] functions/*.[ch]
 
+analyz:
+	cppcheck --enable=all --suppress=missingIncludeSystem *.[ch] functions/*.[ch]
+
 cleano:
 	rm -f *.o 
 
 clean: cleano
-	rm -f $(EXECUTABLE) a.out
+	rm -f $(EXECUTABLE) *.log
 
-.PHONY: all clean exe format cleano
+.PHONY: all clean exe format cleano 

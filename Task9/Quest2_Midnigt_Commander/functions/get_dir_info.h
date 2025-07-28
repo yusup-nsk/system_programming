@@ -21,6 +21,8 @@
 #define TABULATION_KEY 9
 #define ESCAPE_KEY 27
 
+extern int g_chahged_screen_size;
+
 typedef struct {
   char name[LEN];
   size_t size;
@@ -38,6 +40,7 @@ typedef struct {
   unsigned columns;
 } Frame;
 
+void sig_winch(int signo);
 int my_filter(const struct dirent *name);
 int my_compar(const struct dirent **de1, const struct dirent **de2);
 int try_to_change_directory(char *fulldirname, const char *directory);
