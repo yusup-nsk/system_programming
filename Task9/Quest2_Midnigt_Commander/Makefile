@@ -3,9 +3,11 @@ CFLAGS := -Wall -Werror -Wextra -pedantic
 CURSES_FLAG := -lncurses
 EXECUTABLE := mycommander
 
-run: clean exe
-	make format
+all: clean exe run
+
+run:
 	./$(EXECUTABLE)
+
 exe:
 	$(CC) $(CFLAGS) -c functions/*.c  $(CURSES_FLAG)
 	$(CC) $(CFLAGS) main.c *.o -o $(EXECUTABLE) $(CURSES_FLAG)
@@ -19,4 +21,4 @@ cleano:
 clean: cleano
 	rm -f $(EXECUTABLE) a.out
 
-.PHONY: clean exe format cleano
+.PHONY: all clean exe format cleano

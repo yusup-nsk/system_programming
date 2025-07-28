@@ -87,9 +87,13 @@ void output_info_frame(WINDOW *wnd, const Info *arr_info, Frame frame,
   char format[LEN];
   sprintf(format, " %%-%u.%us|%%%u.%us|%%-%u.%us\n", name_len, name_len,
           size_len, size_len, time_len, time_len);
-  wattron(wnd, A_BOLD);
-  wprintw(wnd, format, " NAME ", " SIZE ", " TIME ");
-  wattroff(wnd, A_BOLD);
+  if (actual) {
+    wattron(wnd, A_BOLD);
+    wprintw(wnd, format, " NAME ", " SIZE ", " TIME ");
+    wattroff(wnd, A_BOLD);
+  } else {
+    wprintw(wnd, format, " NAME ", " SIZE ", " TIME ");
+  }
   unsigned n = 0;
   if (current_index > rows - 1) {
     n = current_index - rows + 1;

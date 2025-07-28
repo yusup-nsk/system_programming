@@ -53,7 +53,7 @@ int get_dir_info(const char *fulldirname, Info *arr_info,
     time_t time_now = time(NULL);
     struct tm *now = localtime(&time_now);
     int year_now = now->tm_year;
-    char str_time[T_LEN];
+    char str_time[LEN];
     char s[LEN];
     strncpy(s, fulldirname, LEN);
     strncat(s, "/", 2);
@@ -128,5 +128,3 @@ void windows_initiation(WINDOW *the_window[2], Frame the_frame[2]) {
     wbkgd(the_window[i], COLOR_PAIR(1));
   }
 }
-
-//============================================

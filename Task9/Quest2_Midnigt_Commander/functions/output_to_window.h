@@ -9,6 +9,8 @@
 int make_string_for_size_column(char *str_size, unsigned size_len,
                                 unsigned size);
 void draw_horizontal_line(WINDOW *window, unsigned columns, char symbol);
+void output_info_frame(WINDOW *wnd, const Info *arr_info, Frame frame,
+                       unsigned actual);
 const char *make_short_dirname(const char *fullname, unsigned length);
 void output_the_win(WINDOW *win, Frame frame, const Info *info,
                     unsigned actual);

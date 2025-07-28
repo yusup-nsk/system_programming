@@ -3,7 +3,6 @@
 
 #include <curses.h>
 #include <dirent.h>
-#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,9 +12,10 @@
 #include <termios.h>
 #include <time.h>
 
-#define T_LEN 13
-#define LEN 128
-#define MAX_FILES 256
+#define LEN 128  // максимальная длина названия файла или директории
+#define MAX_FILES \
+  512  // максимальное количество записей в директории, которые способно
+       // показать программа
 #define MINIMUM_ROWS 10
 #define MINIMUM_COLUMNS 40
 #define TABULATION_KEY 9
@@ -24,7 +24,7 @@
 typedef struct {
   char name[LEN];
   size_t size;
-  char time[T_LEN];
+  char time[LEN];
   int type;
 } Info;
 
@@ -45,6 +45,5 @@ void windows_initiation(WINDOW *the_window[2], Frame the_frame[2]);
 void change_directory(char *fulldirname, const char *directory);
 void change_directory_up(char *fulldirname);
 int get_dir_info(const char *fulldirname, Info *arr_info, unsigned *number);
-int get_dir_info2(const char *fulldirname, Info *arr_info, unsigned *number);
 
 #endif
