@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 #define LEN 12
 #define MAX_LINE 512
@@ -17,21 +18,24 @@ void free_arr(char **arr, unsigned count);
 int main() {
   unsigned count;
   char **arr = NULL;
+  int repeat=1;
+  while(repeat){
   int res = input_arr(&arr, &count);
   if (-1 == res) {
     printf("\nInput failed\n\n");
-    // perror("Input failed");
   }
-  output_arr(arr, count);
+ if (strncmp(arr[0], "exit", 5)){
+  pid_t pid = fork();
+  if (0==pid){
+    execvp(arr[0], arr);
+  }
+     wait(NULL);  
+     kill(pid, SIGTERM);
+ } else repeat=0;
 
-  execvp(arr[0], arr);
-
-  //    char* list[] = {"ls", "-la" , NULL};
-  //  execvp("ls", list);
-
-  //   output_arr(arr, count);
   free_arr(arr, count);
-  printf("\n\nGGGGGGGGGGGGGGG\n");
+} // while repeat
+
   return 0;
 }
 
@@ -40,6 +44,7 @@ int input_arr(char ***arr, unsigned *count) {
     return -1;
   }
   *count = 0;
+  printf("Input command: ");
   char line[MAX_LINE];
   fgets(line, MAX_LINE, stdin);
   if (0 == line[0]) {
@@ -51,7 +56,7 @@ int input_arr(char ***arr, unsigned *count) {
   unsigned sz = SZ;
   *arr = (char **)malloc(sz * sizeof(char *));
   if (NULL == *arr) {
-    printf("FFFFFFFFFFFF\n");
+    printf("Failed malloc for array\n");
     return -1;
   }
   for (char *s = strtok(line, " \t\n"); s; s = strtok(NULL, " \t\n")) {
@@ -66,7 +71,6 @@ int input_arr(char ***arr, unsigned *count) {
     sprintf(format, "%%%ds", LEN - 1);
     sscanf(s, format, (*arr)[*count]);
     (*arr)[*count][LEN - 1] = 0;
-    // printf("====%u====%11s=========\n", *count, (*arr)[*count]);
     *count += 1;
   }
   (*arr)[*count] = NULL;
