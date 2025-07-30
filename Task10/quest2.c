@@ -14,10 +14,11 @@ int main() {
   if (0 == pid) {
     process1 = getpid();
     assert(process0 == getppid());
-    printf("Starting process \033[1;33m #1. \033[0m My pid is \033[1;33m %d "
-           "\033[0m My parent's "
-           "pid is \033[1;33m %d \033[0m\n\n",
-           getpid(), getppid());
+    printf(
+        "Starting process \033[1;33m #1. \033[0m My pid is \033[1;33m %d "
+        "\033[0m My parent's "
+        "pid is \033[1;33m %d \033[0m\n\n",
+        getpid(), getppid());
   } else {
     printf(
         "Doing  process \033[1;33m #0. -main- \033[0m My pid is \033[1;33m %d "
@@ -28,10 +29,11 @@ int main() {
     pid = fork();
     process2 = pid;
     if (0 == pid) {
-      printf("Starting process \033[1;33m #2. \033[0m My pid is \033[1;33m %d "
-             "\033[0m My parent's "
-             "pid is \033[1;33m %d \033[0m\n\n",
-             getpid(), getppid());
+      printf(
+          "Starting process \033[1;33m #2. \033[0m My pid is \033[1;33m %d "
+          "\033[0m My parent's "
+          "pid is \033[1;33m %d \033[0m\n\n",
+          getpid(), getppid());
       process2 = getpid();
       assert(process0 == getppid());
     }
@@ -52,10 +54,11 @@ int main() {
     pid = fork();
     process3 = pid;
     if (0 == pid) {
-      printf("Starting process \033[1;33m #3. \033[0m My pid is \033[1;33m %d "
-             "\033[0m My parent's "
-             "pid is \033[1;33m %d \033[0m\n\n",
-             getpid(), getppid());
+      printf(
+          "Starting process \033[1;33m #3. \033[0m My pid is \033[1;33m %d "
+          "\033[0m My parent's "
+          "pid is \033[1;33m %d \033[0m\n\n",
+          getpid(), getppid());
       process3 = getpid();
       assert(getppid() == process1);
     } else {
@@ -92,10 +95,11 @@ int main() {
     pid = fork();
     process5 = pid;
     if (0 == pid) {
-      printf("Starting process \033[1;33m #5. \033[0m My pid is \033[1;33m %d "
-             "\033[0m My parent's "
-             "pid is \033[1;33m %d \033[0m\n\n",
-             getpid(), getppid());
+      printf(
+          "Starting process \033[1;33m #5. \033[0m My pid is \033[1;33m %d "
+          "\033[0m My parent's "
+          "pid is \033[1;33m %d \033[0m\n\n",
+          getpid(), getppid());
       process5 = getpid();
       assert(getppid() == process2);
     }

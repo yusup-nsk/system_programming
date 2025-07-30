@@ -1,40 +1,39 @@
 #include <assert.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/wait.h>
-#include <signal.h>
+#include <unistd.h>
 
-#define LEN 12
+#define LEN 128
 #define MAX_LINE 512
-#define NUM 20
-#define SZ 2
+#define SZ 32
 
 int input_arr(char ***arr, unsigned *count);
-void output_arr(char **arr, unsigned count);
 void free_arr(char **arr, unsigned count);
 
 int main() {
   unsigned count;
   char **arr = NULL;
-  int repeat=1;
-  while(repeat){
-  int res = input_arr(&arr, &count);
-  if (-1 == res) {
-    printf("\nInput failed\n\n");
-  }
- if (strncmp(arr[0], "exit", 5)){
-  pid_t pid = fork();
-  if (0==pid){
-    execvp(arr[0], arr);
-  }
-     wait(NULL);  
-     kill(pid, SIGTERM);
- } else repeat=0;
+  int repeat = 1;
+  while (repeat) {
+    int res = input_arr(&arr, &count);
+    if (-1 == res) {
+      printf("\nInput failed\n\n");
+    }
+    if (strncmp(arr[0], "exit", 5)) {
+      pid_t pid = fork();
+      if (0 == pid) {
+        execvp(arr[0], arr);
+      }
+      wait(NULL);
+      kill(pid, SIGTERM);
+    } else
+      repeat = 0;
 
-  free_arr(arr, count);
-} // while repeat
+    free_arr(arr, count);
+  }  // while repeat
 
   return 0;
 }
@@ -86,16 +85,5 @@ void free_arr(char **arr, unsigned count) {
       }
     }
     free(arr);
-  }
-}
-
-void output_arr(char **arr, unsigned count) {
-  if (arr) {
-    for (unsigned i = 0; i < count; ++i) {
-      if (arr[i]) {
-        printf("%u:  %s\n", i, arr[i]);
-      } else
-        printf("%u:  %s\n", i, "NULL");
-    }
   }
 }
