@@ -26,7 +26,7 @@
 pthread_mutex_t mute_shop[N_SHOPS] = PTHREAD_MUTEX_INITIALIZER;
 int shop[N_SHOPS];
 int needs[N_CONSUMERS];
-char colour[N_CONSUMERS][12] = {GREEN, YELLOW, BLUE};
+const char colour[N_CONSUMERS][12] = {GREEN, YELLOW, BLUE};
 
 void fill_shops_in_start(int shop[N_SHOPS]);
 void fill_consumers_needs(int needs[N_CONSUMERS]);
@@ -100,28 +100,31 @@ void* consumers_behavior(void* arg) {
   int shop_index = (cons_index * N_SHOPS / 2) % N_SHOPS;
   int did_purchase = 0;
   int has_needs = 1;
+  int * const this_needs = &needs[cons_index];
+  const char * const color =(const char * const ) &colour[cons_index];
   for (; has_needs; make_next_shop_index(cons_index, &shop_index)) {
+     int * const products_in_this_shop = &shop[shop_index];
     pthread_mutex_lock(&mute_shop[shop_index]);
-    printf("%sConsumer #%d come to shop #%d. Needs = %d\n", colour[cons_index],
-           cons_index, shop_index, needs[cons_index]);
-    if (shop[shop_index]) {
-      if (shop[shop_index] >= needs[cons_index]) {
-        shop[shop_index] -= needs[cons_index];
-        needs[cons_index] = 0;
+    printf("%sConsumer #%d come to shop #%d. Needs = %d\n", color ,
+           cons_index, shop_index, *this_needs );
+    if (* products_in_this_shop ) {
+      if (* products_in_this_shop  >= *this_needs ) {
+        * products_in_this_shop  -= *this_needs ;
+        *this_needs  = 0;
         has_needs = 0;
-        printf("\n\t\t\t%sConsumer #%d: Satisfied the needs!!! \n\n",colour[cons_index], cons_index);
+        printf("\n\t\t\t%sConsumer #%d: Satisfied the needs!!! \n\n",color , cons_index);
       } else {
-        needs[cons_index] -= shop[shop_index];
-        shop[shop_index] = 0;
+        *this_needs  -= * products_in_this_shop ;
+        * products_in_this_shop  = 0;
         did_purchase = 1;
-        printf("%sConsumer #%d: Did purchase....\n", colour[cons_index], cons_index);
+        printf("%sConsumer #%d: Did purchase....\n", color , cons_index);
       }
     }
     if (did_purchase && has_needs) {
       printf(
           "%sConsumer #%d: After shopping in shop #%d, I'm going to sleep with "
-          "needs = %d\n", colour[cons_index],
-          cons_index, shop_index, needs[cons_index]);
+          "needs = %d\n", color ,
+          cons_index, shop_index, *this_needs );
     }
     pthread_mutex_unlock(&mute_shop[shop_index]);
     if (did_purchase && has_needs) {
@@ -138,7 +141,7 @@ void* loader_behavior(void* arg) {
     pthread_mutex_lock(&mute_shop[shop_index]);
     shop[shop_index] += LOADER_VALUE;
     printf(
-        "%sLoader brings products to shop #%d and goes to sleep\n", VIOLET,
+        "%sLoader brings %d products to shop #%d and goes to sleep\n", VIOLET, LOADER_VALUE,
         shop_index);
     pthread_mutex_unlock(&mute_shop[shop_index]);
     shop_index = (shop_index + 1) % N_SHOPS;

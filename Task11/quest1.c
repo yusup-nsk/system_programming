@@ -6,13 +6,13 @@
 
 void* worker(void* arg) {
   int* i = (int*)arg;
- printf("pthread number is %d\n", *i);
+  printf("pthread number is %d\n", *i);
   return NULL;
 }
 
 int main() {
   int i;
- int v[N];
+  int v[N];
   int* status;
   pthread_t tid[N];
 
