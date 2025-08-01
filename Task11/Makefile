@@ -1,13 +1,14 @@
 CC:=gcc
-#CFLAGS:=-Werror -Wextra -Wall -pedantic -g
+CFLAGS:=-Werror -Wextra -Wall -pedantic -g
 EXECUTABLE:=shop
-SOURCE:=s1.c
+SOURCE:=quest3.c
 VALGRIND_LOG:=valgrind.log
+LIB_FLAG:=-pthread
 
 all: exe run
 
 exe:
-	$(CC) $(CFLAGS) $(SOURCE) -o $(EXECUTABLE)
+	$(CC) $(CFLAGS) $(SOURCE) -o $(EXECUTABLE) $(LIB_FLAG)
 
 run:
 	./$(EXECUTABLE)
@@ -24,5 +25,5 @@ leaks:
 	tail -7 $(VALGRIND_LOG)
 
 clean:
-	rm -f *.log a.out
+	rm -f *.log a.out *.o $(EXECUTABLE)
 
