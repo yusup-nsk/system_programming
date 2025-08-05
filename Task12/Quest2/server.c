@@ -14,7 +14,7 @@ int main() {
     exit(EXIT_FAILURE);
   }
   int fdes = open(pipename, O_WRONLY);
-  if (-1 == res) {
+  if (-1 == res && errno != EEXIST) {
     perror("Server could not open the pipe");
     exit(EXIT_FAILURE);
   }
