@@ -1,6 +1,6 @@
 CC:=gcc
 CFLAGS:=-Werror -Wextra -Wall -pedantic -g
-EXECUTABLE:=mybash
+EXECUTABLE:=bash_with_pipe
 SOURCE:=quest3.c
 VALGRIND_LOG:=valgrind.log
 
@@ -24,5 +24,5 @@ leaks:
 	tail -7 $(VALGRIND_LOG)
 
 clean:
-	rm -f *.log a.out
+	rm -f *.log a.out $(EXECUTABLE)
 
