@@ -30,10 +30,12 @@ int get_token(char **arr, char ***token, unsigned *index_in_arr) {
       break;
     }
   }
-  if (NULL == *ptr || 0 == count) {
+  if ( 0 == count) {
     return 0;
   }
+  // if (NULL==*ptr){
 
+  // }
   count++;
   *token = (char **)malloc((count) * sizeof(char *));
   for (int i = 0; i < count - 1; i++) {
@@ -65,24 +67,27 @@ int main() {
       if (0 == pid) {
         char **token = NULL;
         unsigned index_in_arr = 0;
-        int cnt_token = get_token(arr, &token, &index_in_arr);
-        printf("cnt_token = %d; pointer token = %p\n", cnt_token,
-               (void *)token);
-        if (-1 == cnt_token) {
-        } else if (0 == cnt_token) {
-          token = arr;
-          // execve(arr[0], arr);
-        } else {
-          for (int i = 0; i < cnt_token; ++i) {
-            if (token[i])
-              printf("token[%d]:<%s>\n", i, token[i]);
-            else
-              printf("token[%d]:<%s>\n", i, "NUL");
-          }
-          //  execvp(token[0], token);
-        }
+        while (index_in_arr < count) {
+          int cnt_token = get_token(arr, &token, &index_in_arr);
+          printf("cnt_token = %d; pointer token = %p\n", cnt_token,
+                 (void *)token);
+          if (-1 == cnt_token) {
+          } else if (0 == cnt_token) {
+            token = arr;  // + index_in_arr;
+            // execve(arr[0], arr);
+          } else {
+            for (int i = 0; i < cnt_token; ++i) {
+              if (token[i])
+                printf("token[%d]:<%s>\n", i, token[i]);
+              else
+                printf("token[%d]:<%s>\n", i, "NUL");
+            }
 
-        free_arr(token, cnt_token);
+            //  execvp(token[0], token);
+          }
+
+          free_arr(token, cnt_token);
+        }
       }
       // wait(NULL);
       // kill(pid, SIGTERM);
