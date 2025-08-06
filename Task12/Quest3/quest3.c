@@ -11,6 +11,10 @@ int main() {
       printf("\nInput failed\n\n");
       continue;
     } else if (0 == res) {
+      printf("Empty input.\n");
+      continue;
+    } else if (res < 0) {
+      printf("Wrong input\n");
       continue;
     }
     if (strncmp(arr[0], "exit", 5)) {
@@ -51,4 +55,3 @@ int main() {
 
   return 0;
 }
-

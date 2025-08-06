@@ -8,8 +8,12 @@ int input_arr(char ***arr, unsigned *count) {
   printf("Input command: ");
   char line[MAX_LINE];
   unsigned len;
-  if (input_string(line, &len) == -1) {
+  int input_res = input_string(line, &len);
+  if (-1 == input_res) {
     return 0;
+  } else if (-2 == input_res) {
+    // printf("Wrong  input\n");
+    return -2;
   }
 
   printf("\n\nline:<%s>\n", line);
@@ -35,9 +39,25 @@ int input_arr(char ***arr, unsigned *count) {
     (*arr)[*count][LEN - 1] = 0;
     *count += 1;
   }
-  (*arr)[*count] = NULL;
-  *count += 1;
-  return sz;
+  if (strncmp((*arr)[0], "|", 2) == 0) {
+    return -2;
+  }
+  for (unsigned i = 0; i < *count - 1; ++i) {
+    if (strncmp((*arr)[i], "|", 2) == 0 &&
+        strncmp((*arr)[i + 1], "|", 2) == 0) {
+      return -3;
+    }
+  }
+
+
+  if (strncmp((*arr)[*count - 1], "|", 2) == 0) {
+    (*arr)[*count - 1] = NULL;
+
+  } else {
+    (*arr)[*count] = NULL;
+    *count += 1;
+  }
+  return sz;  // or return count;
 }
 
 void free_arr(char **arr, unsigned count) {
@@ -63,7 +83,7 @@ void free_arr(char **arr, unsigned count) {
 // }
 
 int input_string(char *line, unsigned *len) {
-  char scanned_line[MAX_LINE]={0};
+  char scanned_line[MAX_LINE] = {0};
   fgets(scanned_line, MAX_LINE, stdin);
   if (0 == scanned_line[0] || '\n' == scanned_line[0]) {
     *len = 0;
@@ -71,7 +91,10 @@ int input_string(char *line, unsigned *len) {
   }
   scanned_line[MAX_LINE - 1] = 0;
   unsigned line_index = 0;
-  if ('|' == scanned_line[0]) scanned_line[0] = ' ';
+  if ('|' == scanned_line[0]) {
+    return -2;
+    // scanned_line[0] = ' ';
+  }
   line[line_index++] = scanned_line[0];
   for (int i = 1; i < MAX_LINE && line_index < MAX_LINE; i++) {
     if ('|' == scanned_line[i]) {
