@@ -1,7 +1,7 @@
 CC:=gcc
 CFLAGS:=-Werror -Wextra -Wall -pedantic -g
 EXECUTABLE:=bash_with_pipe
-SOURCE:=quest3.c
+SOURCE:=quest3.c functions.c
 VALGRIND_LOG:=valgrind.log
 
 all: exe run
