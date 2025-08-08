@@ -2,6 +2,7 @@
 
 int input_arr(char ***arr, unsigned *count) {
   if (!(arr && count)) {
+    printf("Wrong arguments for <input_arr>\n");
     return -1;
   }
   *count = 0;
@@ -10,7 +11,7 @@ int input_arr(char ***arr, unsigned *count) {
   unsigned len;
   int input_res = input_string(line, &len);
   if (-1 == input_res) {
-    return 0;
+    return -1;
   } else if (-2 == input_res) {
     // printf("Wrong  input\n");
     return -2;
@@ -49,15 +50,14 @@ int input_arr(char ***arr, unsigned *count) {
     }
   }
 
-
   if (strncmp((*arr)[*count - 1], "|", 2) == 0) {
+    free((*arr)[*count - 1]);
     (*arr)[*count - 1] = NULL;
-
   } else {
     (*arr)[*count] = NULL;
     *count += 1;
   }
-  return sz;  // or return count;
+  return 0; 
 }
 
 void free_arr(char **arr, unsigned count) {
@@ -93,7 +93,6 @@ int input_string(char *line, unsigned *len) {
   unsigned line_index = 0;
   if ('|' == scanned_line[0]) {
     return -2;
-    // scanned_line[0] = ' ';
   }
   line[line_index++] = scanned_line[0];
   for (int i = 1; i < MAX_LINE && line_index < MAX_LINE; i++) {
@@ -139,4 +138,45 @@ int get_token(char **arr, char ***token, unsigned *index_in_arr) {
   // output_arr(*token, count);
   *index_in_arr += count;
   return count;
+}
+
+int get_indexes_of_vertical_bars(char **arr, unsigned arr_size,  unsigned indexes_of_vertical_bars[MAX_PIPES], unsigned *n_vertical_bars) {
+  if (!(arr)) {
+    return -1;
+  }
+  *n_vertical_bars =0;
+  unsigned index_in_arr=0;
+  for (unsigned i=0; i<arr_size; ++i){
+     if (arr[i] && (strncmp(arr[i], "|", 2) == 0) ){
+      indexes_of_vertical_bars[*n_vertical_bars] = index_in_arr;
+      (*n_vertical_bars)++;
+    }   
+  }
+  return 0;
+}
+
+int make_string_of_commands(char **arr, unsigned arr_size, char ***command_and_arguments, unsigned *cmd_and_arg_size, unsigned *indexes_of_vertical_bars, unsigned n_vertical_bars, unsigned i_of_command) {
+  assert(i_of_command<=n_vertical_bars);
+  assert(arr && command_and_arguments && cmd_and_arg_size && indexes_of_vertical_bars);
+  unsigned begin , end;
+  if (0==i_of_command ){
+    begin = 0;
+    end = indexes_of_vertical_bars[0];
+  } else if (i_of_command==n_vertical_bars){
+    begin = indexes_of_vertical_bars[n_vertical_bars-1]+1;
+    end = arr_size-1;
+  }
+  else {
+    begin = indexes_of_vertical_bars[i_of_command]+1;
+    end = indexes_of_vertical_bars[i_of_command+1];
+  }
+  *cmd_and_arg_size = end -begin+1;
+  *command_and_arguments = (char **)malloc((*cmd_and_arg_size) * sizeof(char *));
+  for (unsigned i = 0; i < *cmd_and_arg_size - 1; i++) {
+    unsigned size = strlen(arr[begin + i]) + 1;
+    (*command_and_arguments)[i] = (char *)malloc(size * sizeof(char));
+    memcpy((*command_and_arguments)[i], arr[begin + i], size);
+  }
+  (*command_and_arguments)[*cmd_and_arg_size - 1] = NULL;
+  return 0;
 }

@@ -13,14 +13,15 @@ run:
 	./$(EXECUTABLE)
 
 format:
-	clang-format -i --style=Google *.c
+	clang-format -i --style=Google *.c *.h
 
 analyz:
-	cppcheck --enable=all --suppress=missingIncludeSystem $(SOURCE)
+	cppcheck --enable=all --suppress=missingIncludeSystem *.c *.h
 
 leaks:
 	 valgrind --trace-children=yes --track-fds=yes --track-origins=yes \
-	  --leak-check=full --show-leak-kinds=all -s --show-reachable=no --log-file="$(VALGRIND_LOG)" ./$(EXECUTABLE)
+	  --leak-check=full --show-leak-kinds=all -s --show-reachable=no \
+	  --log-file="$(VALGRIND_LOG)" ./$(EXECUTABLE)
 	tail -7 $(VALGRIND_LOG)
 
 clean:
