@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -6,20 +7,25 @@
 
 int main() {
   pid_t pid;
-  int fd[2];
-  pipe(fd);
+  int pipefd[2];
+  if (pipe(pipefd) == -1) {
+    perror("pipe");
+    exit(EXIT_FAILURE);
+  }
   pid = fork();
-
+  if (-1 == pid) {
+    perror("fork");
+    exit(EXIT_FAILURE);
+  }
   if (0 == pid) {
-    close(fd[0]);
-    write(fd[1], "Hi!", 4);
+    close(pipefd[0]);
+    write(pipefd[1], "Hi!", 4);
   } else {
     char str[LENGTH];
-    close(fd[1]);
-    read(fd[0], str, 29);
-    printf("%s\n", str);
+    close(pipefd[1]);
+    read(pipefd[0], str, 29);
+    printf("\"%s\"\n", str);
   }
-  
   wait(NULL);
-  return 0;
+  exit(EXIT_SUCCESS);
 }

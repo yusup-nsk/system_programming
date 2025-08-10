@@ -1,7 +1,7 @@
 CC:=gcc
 CFLAGS:=-Werror -Wextra -Wall -pedantic -g
 EXECUTABLE:=shop
-SOURCE:=quest3.c
+SOURCE:=quest1.c
 VALGRIND_LOG:=valgrind.log
 LIB_FLAG:=-pthread
 
