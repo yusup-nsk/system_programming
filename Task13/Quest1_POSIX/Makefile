@@ -1,5 +1,5 @@
 CC:=gcc
-CFLAGS:=-Werror -Wextra -Wall -pedantic -g
+CFLAGS:=-Werror -Wextra -Wall -pedantic -g -lrt
 CLIENT_EXE:=client 
 SERVER_EXE:=server
 SOURCE_CLIENT:=client.c 
@@ -20,8 +20,8 @@ exe2:
 
 run:
 	./$(SERVER_EXE) &
-	sleep 1
-	./$(CLIENT_EXE)
+	./$(CLIENT_EXE) 
+
 
 format:
 	clang-format -i --style=Google *.c

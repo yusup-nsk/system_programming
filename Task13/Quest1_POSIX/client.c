@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <fcntl.h>
+#include <mqueue.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,49 +8,38 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define LENGTH 128
 #define MSG_LEN 128
 #define PRIORITY 8
-
-struct msgbuff {
-  long prioritet;
-  char text_msg[MSG_LEN];
-};
+#define N_ATTEMPTS 100
 
 int main() {
-  char filename[2 * MSG_LEN];
-  int msgid = 0;
-  sprintf(filename, "%s/%s", getenv("PWD"), "Makefile");
-  struct msgbuff message = {0};
-
-  key_t key = ftok(filename, 2025);
-  if (-1 == key) {
-    perror("function ftok");
+  char mq_name[MSG_LEN] = "/message_queue";
+  char str[MSG_LEN] = {0};
+  unsigned prioritet;
+  mqd_t mqdes = mq_open(mq_name, O_RDWR);
+  for (int attempt = 0; attempt < N_ATTEMPTS && -1 == mqdes; attempt++) {
+    usleep(10000);
+    mqdes = mq_open(mq_name, O_RDWR);
+  }
+  if (-1 == mqdes) {
+    perror("client openning message queue");
     exit(EXIT_FAILURE);
   }
-  if (key && (msgid = msgget(key, 0)) == -1) {
-    perror("get message");
+
+  if (mq_receive(mqdes, str, MSG_LEN, &prioritet) == -1) {
+    perror("client recieving");
+    mq_close(mqdes);
+    exit(EXIT_FAILURE);
+  }
+  str[MSG_LEN - 1] = '\0';
+  printf("\n\033[1;32m%s\033[0m\n\n", str);
+
+  if (mq_send(mqdes, "Hello!", 10, PRIORITY) == -1) {
+    perror("sending client--->server");
+    mq_close(mqdes);
     exit(EXIT_FAILURE);
   }
 
-  if (-1 == msgrcv(msgid, &message, sizeof(struct msgbuff), PRIORITY, 0)) {
-    perror("Failed to recieve message\n");
-  } else {
-    printf("\033[1;32m%s\033[0m\n", message.text_msg);
-  }
-
-  message.prioritet = PRIORITY + 1;
-  strncpy(message.text_msg, "Hello!", MSG_LEN);
-  message.text_msg[MSG_LEN - 1] = '\0';
-
-  int res_msgsnd = msgsnd(msgid, &message, sizeof(message), IPC_NOWAIT);
-  if (res_msgsnd == -1) {
-    perror("sending message");
-    while (-1 == res_msgsnd && EAGAIN == errno) {
-      sleep(1);
-      res_msgsnd = msgsnd(msgid, &message, sizeof(message), IPC_NOWAIT);
-    }
-  }
-
+  mq_close(mqdes);
   exit(EXIT_SUCCESS);
 }

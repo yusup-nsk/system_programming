@@ -3,12 +3,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/msg.h>
 #include <sys/stat.h>
 #include <unistd.h>
-// #include <sys/types.h>
-#include <sys/msg.h>
+
 #define MSG_LEN 128
-#define PRIORITY 8
+#define PRIO_SERVER_TO_CLIENT 100
+#define PRIO_CLIENT_TO_SERVER 200
+#define FILE_TO_KEY "Makefile"
+#define NUMBER_TO_KEY 2025
 
 struct msgbuff {
   long prioritet;
@@ -17,11 +20,12 @@ struct msgbuff {
 
 int main() {
   char filename[2 * MSG_LEN];
-  //  char str[MSG_LEN];
   int msgid = 0;
-  struct msgbuff message1 = {.prioritet = PRIORITY, "Hi!"}, message2;
-  sprintf(filename, "%s/%s", getenv("PWD"), "Makefile");
-  key_t key = ftok(filename, 2025);
+  struct msgbuff message1 = {0}, message2 = {0};
+  message1.prioritet = PRIO_SERVER_TO_CLIENT;
+  strncpy(message1.text_msg, "Hi!", MSG_LEN - 1);
+  sprintf(filename, "%s/%s", getenv("PWD"), FILE_TO_KEY);
+  key_t key = ftok(filename, NUMBER_TO_KEY);
   if (-1 == key) {
     perror("creating key");
     exit(EXIT_FAILURE);
@@ -33,7 +37,6 @@ int main() {
 
   int res_msgsnd = msgsnd(msgid, &message1, sizeof(message1), IPC_NOWAIT);
   if (res_msgsnd == -1) {
-    // printf("Failed to send message %s\n", message1.text_msg);
     perror("sending message");
     while (-1 == res_msgsnd && EAGAIN == errno) {
       sleep(1);
@@ -41,16 +44,12 @@ int main() {
     }
   }
 
-  if (-1 == msgrcv(msgid, &message2, sizeof(struct msgbuff), PRIORITY + 1, 0)) {
+  if (-1 == msgrcv(msgid, &message2, sizeof(struct msgbuff),
+                   PRIO_CLIENT_TO_SERVER, 0)) {
     perror("Failed to recieve message\n");
   } else {
     printf("\033[1;36m%s\033[0m\n", message2.text_msg);
   }
-
-  //   struct msqid_ds buf;
-  // // msgctl(msgid, IPC_STAT, )
-  // // msgctl(msgid, IPC_SET , )
-  // msgctl(msgid, IPC_RMID, &buf);
 
   struct msqid_ds buf;
   msgctl(msgid, IPC_RMID, &buf);
