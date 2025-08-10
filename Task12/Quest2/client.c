@@ -24,7 +24,7 @@ int main() {
     printf("Empty pipe\n");
   }
   str[LENGTH - 1] = 0;
-  printf("%s\n", str);
+  printf("\"%s\"\n", str);
   close(fdes);
 
   exit(EXIT_SUCCESS);

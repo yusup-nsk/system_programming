@@ -40,8 +40,6 @@ leaks2: $(CLIENT_EXE)
 	valgrind --trace-children=yes --track-fds=yes --track-origins=yes \
 	  --leak-check=full --show-leak-kinds=all -s --show-reachable=no --log-file="$(VALGRIND2_LOG)" ./$(CLIENT_EXE) &
 
-
-
 clean:
 	rm -f *.log a.out *.o $(SERVER_EXE) $(CLIENT_EXE) $(PIPE_FILE)
 
