@@ -45,40 +45,24 @@ void draw_horizontal_line(WINDOW *window, unsigned columns, char symbol) {
   }
 }
 
-void output_the_win(WINDOW *win, Frame frame, unsigned actual) {
-  werase(win);
-  wmove(win, 0, 0);
-  draw_horizontal_line(win, frame.columns, '-');
-  wmove(win, 0, 0);
-  if (actual) {
-    wattron(win, A_BOLD);
-    wprintw(win, "<-...%s", "VVVVVVVVVVVVV");
-    wattroff(win, A_BOLD);
-  } else {
-    wprintw(win, "<-...%s", "BBBBBBBBBBBBBBBB");
-  }
-  wmove(win, 1, 0);
-  draw_horizontal_line(win, frame.columns, '-');
-  if (frame.index_current) {
-    wprintw(win, "%s\n", "NNNNNNNNNNNN");
-  } else {
-    wprintw(win, "--UP--\n");
-  }
-  wrefresh(win);
-}
-
-void process_change_screen_size(WINDOW **window, Frame *frame,
-                                unsigned actual) {
-  unsigned index_curr[2];
-  for (unsigned i = 0; i < 2; ++i) {
-    index_curr[i] = frame[i].index_current;
-    delwin(window[i]);
-  }
-  erase();
-  refresh();
-  windows_initiation(window, frame);
-  for (unsigned i = 0; i < 2; ++i) {
-    frame[i].index_current = index_curr[i];
-    output_the_win(window[i], frame[i], i == actual);
-  }
-}
+// void output_the_win(WINDOW *win, Frame frame, unsigned actual) {
+//   werase(win);
+//   wmove(win, 0, 0);
+//   // draw_horizontal_line(win, frame.columns, '-');
+//   wmove(win, 0, 0);
+//   if (actual) {
+//     wattron(win, A_BOLD);
+//     // wprintw(win, "<-...%s", "VVVVVVVVVVVVV");
+//     wattroff(win, A_BOLD);
+//   } else {
+//     // wprintw(win, "<-...%s", "BBBBBBBBBBBBBBBB");
+//   }
+//   wmove(win, 1, 0);
+//   // draw_horizontal_line(win, frame.columns, '-');
+//   if (frame.index_current) {
+//     // wprintw(win, "%s\n", "NNNNNNNNNNNN");
+//   } else {
+//     // wprintw(win, "--UP--\n");
+//   }
+//   wrefresh(win);
+// }

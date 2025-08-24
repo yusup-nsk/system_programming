@@ -1,6 +1,7 @@
 #ifndef _WINDOWS_PROCEDURES_H_
 #define _WINDOWS_PROCEDURES_H_
 
+#include <assert.h>
 #include <curses.h>
 #include <dirent.h>
 #include <signal.h>
@@ -12,11 +13,16 @@
 #include <termios.h>
 #include <time.h>
 
+#include "common_data.h"
+
 #define LEN 255
 #define MINIMUM_ROWS 10
 #define MINIMUM_COLUMNS 40
 #define TABULATION_KEY 9
 #define ESCAPE_KEY 27
+
+#define MAX_TRY_CONNECT 20
+#define MSEC_BETWEEN_TRY_CONNECT 500000
 
 extern int g_chahged_screen_size;
 
@@ -29,7 +35,30 @@ typedef struct {
   unsigned columns;
 } Frame;
 
+typedef struct {
+  unsigned id;
+  char name[NAME_LEN];
+  char chat[MAX_NUM_CHAT][MSG_LEN];
+  unsigned size_chat;
+  char other_names[MAX_CLIENTS][NAME_LEN];
+  unsigned size_names;
+  char message[MSG_LEN];
+  int attribute;
+} Data_of_client;
+
 void sig_winch(int signo);
 void windows_initiation(WINDOW *the_window[3], Frame the_frame[3]);
+
+void windows_init(WINDOW *the_window[3], Frame *frame[3]);
+
+// void process_change_screen_size(WINDOW **window, Frame *frame);
+
+void output_chat_and_names_windows(WINDOW *the_window[3],
+                                   Data_of_client clientdata, Frame frame[3],
+                                   unsigned *start_chat);
+
+void process_change_screen_size2(WINDOW **window, Frame *frame,
+                                 Data_of_client clientdata,
+                                 unsigned *start_chat);
 
 #endif

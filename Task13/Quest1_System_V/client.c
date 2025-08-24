@@ -3,13 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/msg.h>
+#include <sys/msg.h> 
 #include <sys/stat.h>
 #include <unistd.h>
 
 #define MSG_LEN 128
 #define PRIO_SERVER_TO_CLIENT 100
-#define PRIO_CLIENT_TO_SERVER 200
+#define PRIO_CLIENT_TO_SERVER 300
 #define FILE_TO_KEY "Makefile"
 #define NUMBER_TO_KEY 2025
 

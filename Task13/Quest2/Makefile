@@ -1,9 +1,9 @@
 CC := gcc
 CFLAGS := -Wall -Werror -Wextra -pedantic -g
 CURSES_FLAG := -lncurses
-EXECUTABLE := mycommander
+EXECUTABLE := ex
 
-all: clean exe run
+all: clean format exe run
 
 run:
 	./$(EXECUTABLE)
