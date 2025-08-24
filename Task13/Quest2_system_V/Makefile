@@ -14,10 +14,6 @@ all:
 run1: exe1
 	./$(EXECUTABLE1)
 
-server:
-	make exe2
-	./$(EXECUTABLE2)
-
 run2: exe2
 	./$(EXECUTABLE2) &
 
@@ -27,6 +23,12 @@ exe1:
 
 exe2:
 	$(CC) $(CFLAGS) $(SOURCE2) $(COMMON_DATA_SERVER_AND_CLIENT) -o $(EXECUTABLE2) 
+
+server: exe2
+	./$(EXECUTABLE2)
+
+client: exe1
+	./$(EXECUTABLE1)
 
 format:
 	clang-format --style=Google -i *.[ch] functions/*.[ch]
@@ -40,4 +42,4 @@ cleano:
 clean: cleano
 	rm -f $(EXECUTABLE1) $(EXECUTABLE2) *.log
 
-.PHONY: all clean exe format cleano 
+.PHONY: all run1 run2 exe1 exe2 server client clean exe format cleano 
