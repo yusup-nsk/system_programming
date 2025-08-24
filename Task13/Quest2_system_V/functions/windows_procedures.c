@@ -81,7 +81,7 @@ void output_chat_and_names_windows(WINDOW *the_window[3],
     for (; i < clientdata.size_names; ++i) {
       wprintw(the_window[NAMES_WINDOW], " %s", clientdata.other_names[i]);
       y = getcury(the_window[NAMES_WINDOW]);
-      if (y >= frame[NAMES_WINDOW].rows-1)  {
+      if (y >= frame[NAMES_WINDOW].rows - 1) {
         start_names_index++;
         break;
       }

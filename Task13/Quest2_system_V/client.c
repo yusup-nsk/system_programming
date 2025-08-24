@@ -160,4 +160,4 @@ int main() {
     if (errors_log) fclose(errors_log);
   }
   exit(EXIT_SUCCESS);
-}  //===========================================================
+}

@@ -30,10 +30,9 @@ int main() {
 
       if (-1 != msgrcv(msqid, &message2, sizeof(struct msgbuff),
                        PRIO_CLIENT_TO_SERVER, 0)) {
-        // printf("\033[1;36m%s\033[0m\n", message2.text_msg);
         char name[NAME_LEN];
-                  char format[NAME_LEN];
-          sprintf(format, "%%%ds %%u", NAME_LEN-1);
+        char format[NAME_LEN];
+        sprintf(format, "%%%ds %%u", NAME_LEN - 1);
         unsigned scanned_id;
         if (sscanf(message2.text_msg, format, name, &scanned_id) == 2) {
           num_clients++;
@@ -60,7 +59,6 @@ int main() {
       sprintf(message1.text_msg, "exit 0");
       message1.prioritet = 1;
       msgsnd(msqid_inner, &message1, sizeof(message1), IPC_NOWAIT);
-      // printf("process exit  res of sending is %d\n", res);
     } else { /* главный процесс  */
       Information info = {0};
       info.size_chat = info.size_clients = 0;
@@ -68,13 +66,12 @@ int main() {
       while (1) {
         if (-1 != msgrcv(msqid_inner, &message2, sizeof(struct msgbuff), 1,
                          IPC_NOWAIT)) {
-          // printf("\033[1;36minner||%s||\033[0m\n", message2.text_msg);
           char name[NAME_LEN];
           char format[NAME_LEN];
-          sprintf(format, "%%%ds %%u", NAME_LEN-1);
+          sprintf(format, "%%%ds %%u", NAME_LEN - 1);
           unsigned scanned_id;
           if (sscanf(message2.text_msg, format, name, &scanned_id) == 2) {
-            if (0 == scanned_id && 0 == strncmp(name, "exit", 5 )) {
+            if (0 == scanned_id && 0 == strncmp(name, "exit", 5)) {
               break;  // EXIT PROGRAMM
             } else {  // при первом контакте клиента его имя и ID сохраняются в
                       // базе данных и  для связи сервера и клиента создается
@@ -130,7 +127,6 @@ int main() {
             info.size_chat++;
           }
         }
-        // output_client_data(info);
         sleep(3);
       }
       struct msqid_ds buf;
