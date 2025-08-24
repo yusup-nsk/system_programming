@@ -1,9 +1,7 @@
 #ifndef _WINDOWS_PROCEDURES_H_
 #define _WINDOWS_PROCEDURES_H_
 
-#include <assert.h>
 #include <curses.h>
-#include <dirent.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +9,6 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <termios.h>
-#include <time.h>
 
 #include "common_data.h"
 
@@ -48,17 +45,11 @@ typedef struct {
 
 void sig_winch(int signo);
 void windows_initiation(WINDOW *the_window[3], Frame the_frame[3]);
-
-void windows_init(WINDOW *the_window[3], Frame *frame[3]);
-
-// void process_change_screen_size(WINDOW **window, Frame *frame);
-
 void output_chat_and_names_windows(WINDOW *the_window[3],
                                    Data_of_client clientdata, Frame frame[3],
                                    unsigned *start_chat);
-
-void process_change_screen_size2(WINDOW **window, Frame *frame,
-                                 Data_of_client clientdata,
-                                 unsigned *start_chat);
+void process_change_screen_size(WINDOW **window, Frame *frame,
+                                Data_of_client clientdata,
+                                unsigned *start_chat);
 
 #endif

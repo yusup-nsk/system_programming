@@ -1,19 +1,6 @@
 
 #include "server.h"
 
-void output_client_data(Information info) {
-  printf("message=%s \n", info.message);
-  printf("CLIENTS:\n");
-  for (unsigned i = 0; i < info.size_clients; ++i) {
-    printf("%u) id:%u    name:%s mqueue=%d\n", i, info.clients[i].id,
-           info.clients[i].name, info.clients[i].mqueue);
-  }
-  printf("CHAT:\n");
-  for (unsigned i = 0; i < info.size_chat; ++i) {
-    printf("%u: %s\n", i, info.chat[i]);
-  }
-}
-
 int main() {
   struct msgbuff message1 = {0}, message2 = {0};
   message1.prioritet = PRIO_SERVER_TO_CLIENT;
@@ -25,8 +12,8 @@ int main() {
     exit(EXIT_FAILURE);
   }
   pid_t pid = fork();
-  if (0 == pid) { /* в этом процессе своя  очередь для первого контакта
-      сервер ставит очередной номер id,
+  if (0 == pid) { /* в этом процессе своя  очередь для первого контакта.
+      сервер ставит в очередь сообщений очередной номер id,
       клиент считывает и возвращает свое имя и этот id.
       этот процесс передает главному процессу через внутреннюю очередь сообщений
       данные нового клиента
@@ -41,14 +28,14 @@ int main() {
         exit(EXIT_FAILURE);
       }
 
-      if (-1 == msgrcv(msqid, &message2, sizeof(struct msgbuff),
+      if (-1 != msgrcv(msqid, &message2, sizeof(struct msgbuff),
                        PRIO_CLIENT_TO_SERVER, 0)) {
-        perror("Failed to recieve message\n");
-      } else {
-        printf("\033[1;36m%s\033[0m\n", message2.text_msg);
+        // printf("\033[1;36m%s\033[0m\n", message2.text_msg);
         char name[NAME_LEN];
+                  char format[NAME_LEN];
+          sprintf(format, "%%%ds %%u", NAME_LEN-1);
         unsigned scanned_id;
-        if (sscanf(message2.text_msg, "%s %u", name, &scanned_id) == 2) {
+        if (sscanf(message2.text_msg, format, name, &scanned_id) == 2) {
           num_clients++;
           message2.prioritet = 1;
           res_msgsnd = msgsnd(msqid_inner, &message2, sizeof(message1), 0);
@@ -72,27 +59,26 @@ int main() {
       }
       sprintf(message1.text_msg, "exit 0");
       message1.prioritet = 1;
-      int res = msgsnd(msqid_inner, &message1, sizeof(message1), IPC_NOWAIT);
-      printf("process exit  res of sending is %d\n", res);
+      msgsnd(msqid_inner, &message1, sizeof(message1), IPC_NOWAIT);
+      // printf("process exit  res of sending is %d\n", res);
     } else { /* главный процесс  */
       Information info = {0};
       info.size_chat = info.size_clients = 0;
       struct chat_msg chatmsg;
       while (1) {
-        if (-1 == msgrcv(msqid_inner, &message2, sizeof(struct msgbuff), 1,
+        if (-1 != msgrcv(msqid_inner, &message2, sizeof(struct msgbuff), 1,
                          IPC_NOWAIT)) {
-          // perror("Failed to recieve message 2\n");
-        } else {
-          printf("\033[1;36minner||%s||\033[0m\n", message2.text_msg);
+          // printf("\033[1;36minner||%s||\033[0m\n", message2.text_msg);
           char name[NAME_LEN];
+          char format[NAME_LEN];
+          sprintf(format, "%%%ds %%u", NAME_LEN-1);
           unsigned scanned_id;
-          if (sscanf(message2.text_msg, "%s %u", name, &scanned_id) == 2) {
-            if (0 == scanned_id && 0 == strncmp(name, "exit", MSG_LEN - 1)) {
-              printf("BREAKKKKKKKKKK \n");
+          if (sscanf(message2.text_msg, format, name, &scanned_id) == 2) {
+            if (0 == scanned_id && 0 == strncmp(name, "exit", 5 )) {
               break;  // EXIT PROGRAMM
             } else {  // при первом контакте клиента его имя и ID сохраняются в
-                      // базе данных и  для клиента создается индивидуальная
-                      // очередь сообщений
+                      // базе данных и  для связи сервера и клиента создается
+                      // индивидуальная очередь сообщений
               strncpy(info.clients[info.size_clients].name, name, NAME_LEN);
               info.clients[info.size_clients].id = scanned_id;
               if ((info.clients[info.size_clients].mqueue =
@@ -125,31 +111,26 @@ int main() {
             }
           }
         }
-
         struct msgbuff msg = {0};
         for (unsigned i = 0; i < info.size_clients;
              i++) {  // сканируются все индивидуальные очереди сообщений с
-                     // клиентами
-          if (-1 == msgrcv(info.clients[i].mqueue, &msg, sizeof(struct msgbuff),
+                     // клиентами и считываются сообщения от клиентов
+          if (-1 != msgrcv(info.clients[i].mqueue, &msg, sizeof(struct msgbuff),
                            PRIO_CLIENT_TO_SERVER, IPC_NOWAIT)) {
-            // perror("Failed to recieve message 3\n");
-          } else {
-            printf(
-                "\033[1;36m======================%s: %s==============\033[0m\n",
-                info.clients[i].name, msg.text_msg);
             sprintf(info.chat[info.size_chat], "%s: %s", info.clients[i].name,
                     msg.text_msg);
-
             chatmsg.prioritet = PRIO_SERVER_TO_CLIENT;
             sprintf(chatmsg.text_msg, "%c%s", SYMBOL_CHAT,
                     info.chat[info.size_chat]);
-            for (unsigned j = 0; j < info.size_clients; j++) {
+            for (unsigned j = 0; j < info.size_clients;
+                 j++) {  // полученное сообщение отправляется от сервера всем
+                         // клиентам
               msgsnd(info.clients[j].mqueue, &chatmsg, sizeof(msg), IPC_NOWAIT);
             }
             info.size_chat++;
           }
         }
-        output_client_data(info);
+        // output_client_data(info);
         sleep(3);
       }
       struct msqid_ds buf;

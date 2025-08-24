@@ -7,6 +7,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #define MSG_LEN 255
 #define NAME_LEN 30
