@@ -41,5 +41,6 @@ cleano:
 
 clean: cleano
 	rm -f $(EXECUTABLE1) $(EXECUTABLE2) *.log
+	ipcrm -a
 
 .PHONY: all run1 run2 exe1 exe2 server client clean exe format cleano 

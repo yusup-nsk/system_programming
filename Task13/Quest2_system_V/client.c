@@ -93,6 +93,8 @@ int main() {
         }
       }
     }
+      struct msqid_ds buf;
+      msgctl(mqueue_inner, IPC_RMID, &buf);
     kill(main_pid, SIGTERM);
   } else {  // главный процесс получает от сервера данные о чате и именах
     int inputted = 0;

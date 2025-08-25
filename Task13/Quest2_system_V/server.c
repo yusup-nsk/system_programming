@@ -127,18 +127,15 @@ int main() {
             info.size_chat++;
           }
         }
-        sleep(3);
       }
       struct msqid_ds buf;
       for (unsigned i = 0; i < info.size_clients; i++) {
         msgctl(info.clients[i].mqueue, IPC_RMID, &buf);
-        printf("REMOVING QUEUE FOR CLIENT #%u\n", i);
       }
       msgctl(msqid, IPC_RMID, &buf);
       msgctl(msqid_inner, IPC_RMID, &buf);
       kill(process_stop_pid, SIGTERM);
     }
   }
-  printf("SERVER PROCESS #%d ENDS\n", getpid());
   exit(EXIT_SUCCESS);
 }
