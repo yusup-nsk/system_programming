@@ -1,32 +1,43 @@
 
 #include "functions/client_functions.h"
+// #include <asm/signal.h>
+// #include <asm-generic/siginfo.h>
 
 int g_chahged_screen_size = 0;
 
-int get_mutex_semaphore(int *mutex_sem, const char *file, int proj_id) {
-  key_t key = ftok(file, proj_id);
-  if (-1 == key) {
-    perror("ftok in get semaphore");
-    return -1;
+// int g_global=0;
+
+// void signal_action(int signum, siginfo_t *info, void *args){
+//   int a =*(int*)args;
+//   char c = *(char*)info;
+
+//   if (signum==10)
+//   g_global =a+signum + c;
+// }
+
+int broadcast_signal_i_typed_message(int *shmaddr_client_ids) {
+  int res = 0;
+  for (unsigned p = 1; !res && p <= MAX_CLIENTS; p++) {
+    if (shmaddr_client_ids[p]) {
+      res = kill(shmaddr_client_ids[p], SIGUSR1);
+    }
   }
-  *mutex_sem = semget(key, 1, 0);
-  if (-1 == *mutex_sem) {
-    perror("semget in get semaphore");
-    return -1;
-  }
-  return 0;
+  return res;
 }
 
-void send_message_to_chat(ChatData *shmaddr_chat, const char *name,
-                          const char *message) {
-  sprintf(shmaddr_chat->chat[shmaddr_chat->last], "%s: %s", name, message);
-  shmaddr_chat->last += 1;
-  if (!shmaddr_chat->overflowed && shmaddr_chat->last >= MAX_NUM_CHAT) {
-    shmaddr_chat->overflowed = 1;
-  }
-  shmaddr_chat->last %= MAX_NUM_CHAT;
-}
 int main() {
+  // struct sigaction act;
+  // act.sa_sigaction = signal_action;
+  // sigset_t set;
+  // sigemptyset(&set);
+  // sigaddset(&set, SIGUSR1);
+  // // sigaddset(&set, SIGUSR2);
+  // // act.sa_mask = set;
+  // // act.sa_flags = SA_RESTART;
+  // // sigaction(SIGUSR1, &act, 0);
+  // int ret = sigprocmask(SIG_BLOCK, &set, NULL);
+  // error_handle(ret < 0, "set blocking signal SIGUSR1\n");
+
   int shmid_client_ids, shmid_names, shmid_chat;
   int mutex_sem_names, mutex_sem_chat;
   int *shmaddr_client_ids;  //данная разделяемая память используется как массив,
@@ -73,7 +84,10 @@ int main() {
         break;
       }
     }
-    if (MAX_CLIENTS + 1 == id) {  // все ячейки массива заняты
+    if (MAX_CLIENTS + 1 ==
+        id) {  // все ячейки массива заняты, когда какой-нибудь клиент выйдет из
+               // чата, он обнулит значение в массиве  и новый клиент сможет
+               // занять это значение ID.
       printf("Sorry, no place for the client, try again later\n");
       exit(EXIT_SUCCESS);
       //   break;
@@ -88,11 +102,11 @@ int main() {
   //""""""""""""""""""""""" unlock """""""""""""""""""""""""""""""""
   int shmid_inner;
   char *shmaddr_inner;  // общая память внутренних процессов клиента
-  if (make_shared_memory(&shmid_inner, (void *)&shmaddr_inner, CHAT_MSG_LEN + 2,
-                         FILE_TO_KEY, NUMBER_TO_KEY + mypid)) {
-    perror("make shared memory");
-    exit(EXIT_FAILURE);
-  }
+  res =
+      make_shared_memory(&shmid_inner, (void *)&shmaddr_inner, CHAT_MSG_LEN + 2,
+                         FILE_TO_KEY, NUMBER_TO_KEY + mypid);
+  error_handle(res, "make shared memory");
+
   cbreak();
   noecho();
   initscr();
@@ -102,14 +116,15 @@ int main() {
 
   pid_t pid = fork();
   if (0 == pid) {  // child process for input messages
+    kill(mypid, SIGUSR1);
+    res = broadcast_signal_i_typed_message(shmaddr_client_ids);
+    // error_handle(res, "Can't send broadcast signal\n");
     int repeat = 1;
     while (repeat) {  // процесс для считывания  с клавиатуры и
       // отправки сообщения в общую память
       char str[MSG_LEN] = {0};
       unsigned indx = 0;
-      // cbreak();
       noecho();
-      // initscr();
       keypad(stdscr, TRUE);
       while (1) {  // while not inputted ESCAPE_KEY
         int ch;
@@ -125,7 +140,6 @@ int main() {
           }
         } else {
           if ('\n' == ch) {
-            // sprintf(shmaddr_inner, "_[%s]: \n", name);
             str[indx] = 0;
             indx = 0;
             if (strlen(str)) {
@@ -145,10 +159,25 @@ int main() {
             indx++;
           }
         }
+        kill(mypid, SIGUSR1);
       }
       shmaddr_inner[0] = SYMBOL_EXIT;
+      kill(mypid, SIGUSR1);
+      res = broadcast_signal_i_typed_message(shmaddr_client_ids);
+      // error_handle(res, "Can't send broadcast signal\n");
+      // for (unsigned p = 1; p <= MAX_CLIENTS; p++) {
+      //   if (shmaddr_client_ids[p]) {
+      //     kill(shmaddr_client_ids[p], SIGUSR1);
+      //   }
+      // }
     }
   } else {  // pid!=0, main process
+      sigset_t set;
+  sigemptyset(&set);
+  sigaddset(&set, SIGUSR1);
+  int ret = sigprocmask(SIG_BLOCK, &set, NULL);
+  error_handle(ret < 0, "set blocking signal SIGUSR1\n");
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     int inputted = 0;
     WINDOW *the_window[3];
     Frame the_frame[3];
@@ -176,18 +205,20 @@ int main() {
     wprintw(the_window[INPUT_WINDOW], "[%s]:\n", name);
     // int repeat = 1;
     while (1) {
+      // int accessed_signal;
+      // sigwait(&set, &accessed_signal);
       if (g_chahged_screen_size) {
         g_chahged_screen_size = 0;
-        // process_change_screen_size(the_window, the_frame, clientdata,
+        // process_change_screen_size2(the_window, the_frame, clientdata,
         //                            &start_chat);
-        sleep(1);
+        // sleep(1);
+        process_change_screen_size3(the_window, the_frame);
       }
-      // if (msgrcv(mqueue_inner, &message, sizeof(message), 1, IPC_NOWAIT) !=
-      //     -1) {
+
       if (SYMBOL_EXIT == shmaddr_inner[0]) {
         break;
       }
-      if (shmaddr_inner[0] == SYMBOL_WRITING_MESSAGE) {
+      if (SYMBOL_WRITING_MESSAGE == shmaddr_inner[0]) {
         inputted = 1;
         wmove(the_window[INPUT_WINDOW], 0, 0);
         wprintw(the_window[INPUT_WINDOW], "\n\n");
@@ -206,7 +237,6 @@ int main() {
       clientdata.size_chat =
           shmaddr_chat->overflowed ? MAX_NUM_CHAT : shmaddr_chat->last;
       for (unsigned i = 0; i < clientdata.size_chat; i++) {
-        // strncpy(clientdata.chat[i], "777777777777", CHAT_MSG_LEN);
         if (shmaddr_chat->overflowed)
           strncpy(clientdata.chat[i],
                   shmaddr_chat->chat[(i + shmaddr_chat->last) % MAX_NUM_CHAT],
@@ -236,10 +266,12 @@ int main() {
       output_chat_and_names_windows2(the_window, clientdata, the_frame,
                                      &start_chat);
       refresh();
+      int accessed_signal;
+      sigwait(&set, &accessed_signal);
     }
     //"""""""""""""""""""" lock """"""""""""""""""""""""""""""""""""
     semop(mutex_sem_chat, lock, 2);
-    send_message_to_chat(shmaddr_chat, name, "<<leaving this chat room>>");
+    send_message_to_chat(shmaddr_chat, name, "<<leaves this chat room>>");
     semop(mutex_sem_chat, unlock, 1);
     //""""""""""""""""""""""" unlock """""""""""""""""""""""""""""""""
 

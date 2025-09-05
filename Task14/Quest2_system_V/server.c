@@ -2,7 +2,6 @@
 
 #include "functions/common_data.h"
 
-
 int make_mutex_semaphore(int *mutex_sem, const char *file, int proj_id,
                          int num_sems, int init_value) {
   key_t key = ftok(file, proj_id);
@@ -40,38 +39,28 @@ int main() {
                          NUMBER_TO_KEY_NAMES) ||
       make_shared_memory(&shmid_chat, (void *)&shmaddr_chat, sizeof(ChatData),
                          FILE_TO_KEY_CHAT, NUMBER_TO_KEY_CHAT);
-  if (res) {
-    perror("make shared memory");
-    exit(EXIT_FAILURE);
-  }
+  error_handle(res, "make shared memory");
+  // if (res) {
+  //   perror("make shared memory");
+  //   exit(EXIT_FAILURE);
+  // }
   res = make_mutex_semaphore(&mutex_sem_names, FILE_TO_KEY_NAMES,
                              NUMBER_TO_KEY_SEM_NAMES, 1, 0) ||
         make_mutex_semaphore(&mutex_sem_chat, FILE_TO_KEY_CHAT,
                              NUMBER_TO_KEY_SEM_CHAT, 1, 0);
-  if (res) {
-    perror("make semaphore");
-    exit(EXIT_FAILURE);
-  }
-
-  // struct sembuf lock_sem[2] = {{-1, 0, 0}, {-1, 1, 0}};
-  // struct sembuf unlock_sem = {-1, -1, 0};
-
-  // struct sembuf wait_sem = {{-1, 0, 0}, {-1, 0, 0}};
-
-  //   initscr();
-  // keypad(stdscr, TRUE);
+  error_handle(res, "make semaphore");
 
   shmaddress_client_ids[0] = 1;
   strncpy(shmaddr_names, "ONLINE:", MSG_LEN);
-  // printf("Input symbol '%c' for exit\n", SYMBOL_EXIT);
   pid_t process_read_input_pid = fork();
   if (0 == process_read_input_pid) {
     initscr();
     cbreak();
     keypad(stdscr, TRUE);
-    printf("[SERVER WORKS]   Run './client' in another terminal.   Press <ESCAPE> to exit  ");
+    printf(
+        "[SERVER WORKS]   Run './client' in another terminal.   Press <ESCAPE> "
+        "to exit  ");
     char chr = ' ';
-    // while (chr != SYMBOL_EXIT && chr != 27) {
     while (ESCAPE_KEY != chr) {
       chr = getchar();
     }

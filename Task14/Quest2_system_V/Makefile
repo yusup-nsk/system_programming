@@ -8,6 +8,7 @@ EXECUTABLE2 := client
 COMMON_DATA_SERVER_AND_CLIENT := functions/common_data.c
 
 all: exe1 exe2 
+	@make format
 # 	@printf "\nServer programm is running here.\nRun './client' in another terminal\n\n"
 	@./$(EXECUTABLE1)
 
