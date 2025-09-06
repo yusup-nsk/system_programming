@@ -40,10 +40,7 @@ int main() {
       make_shared_memory(&shmid_chat, (void *)&shmaddr_chat, sizeof(ChatData),
                          FILE_TO_KEY_CHAT, NUMBER_TO_KEY_CHAT);
   error_handle(res, "make shared memory");
-  // if (res) {
-  //   perror("make shared memory");
-  //   exit(EXIT_FAILURE);
-  // }
+
   res = make_mutex_semaphore(&mutex_sem_names, FILE_TO_KEY_NAMES,
                              NUMBER_TO_KEY_SEM_NAMES, 1, 0) ||
         make_mutex_semaphore(&mutex_sem_chat, FILE_TO_KEY_CHAT,

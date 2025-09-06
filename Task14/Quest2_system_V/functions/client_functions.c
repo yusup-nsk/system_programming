@@ -126,7 +126,6 @@ void output_chat_and_names_windows2(WINDOW *the_window[3],
   unsigned chatindex = *start_chat;
   for (; chatindex < clientdata.size_chat; chatindex++) {
     wprintw(the_window[CHAT_WINDOW], "%s", clientdata.chat[chatindex]);
-
     wprintw(the_window[CHAT_WINDOW], "\n");
   }
 

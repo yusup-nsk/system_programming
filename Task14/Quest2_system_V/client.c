@@ -1,52 +1,30 @@
 
 #include "functions/client_functions.h"
-// #include <asm/signal.h>
-// #include <asm-generic/siginfo.h>
 
 int g_chahged_screen_size = 0;
 
-// int g_global=0;
-
-// void signal_action(int signum, siginfo_t *info, void *args){
-//   int a =*(int*)args;
-//   char c = *(char*)info;
-
-//   if (signum==10)
-//   g_global =a+signum + c;
-// }
-
-int broadcast_signal_i_typed_message(int *shmaddr_client_ids) {
+int broadcast_signal_to_all_clients(int *shmaddr_array_id_and_pid) {
   int res = 0;
   for (unsigned p = 1; !res && p <= MAX_CLIENTS; p++) {
-    if (shmaddr_client_ids[p]) {
-      res = kill(shmaddr_client_ids[p], SIGUSR1);
+    if (shmaddr_array_id_and_pid[p]) {
+      res = kill(shmaddr_array_id_and_pid[p], SIGUSR1);
     }
   }
   return res;
 }
 
 int main() {
-  // struct sigaction act;
-  // act.sa_sigaction = signal_action;
-  // sigset_t set;
-  // sigemptyset(&set);
-  // sigaddset(&set, SIGUSR1);
-  // // sigaddset(&set, SIGUSR2);
-  // // act.sa_mask = set;
-  // // act.sa_flags = SA_RESTART;
-  // // sigaction(SIGUSR1, &act, 0);
-  // int ret = sigprocmask(SIG_BLOCK, &set, NULL);
-  // error_handle(ret < 0, "set blocking signal SIGUSR1\n");
-
+  FILE *errors_log = freopen("errors.log", "a+", stderr);
   int shmid_client_ids, shmid_names, shmid_chat;
   int mutex_sem_names, mutex_sem_chat;
-  int *shmaddr_client_ids;  //данная разделяемая память используется как массив,
-                            //где индекс - это ID клиента, а значение по этому
-                            //индексу - PID процесса клиента.
+  int *shmaddr_array_id_and_pid;  //данная разделяемая память используется как
+                                  //массив, где индекс - это ID клиента, а
+                                  //значение по этому индексу - PID процесса
+                                  //клиента.
   char *shmaddr_names;
   ChatData *shmaddr_chat;
   int res =
-      get_shared_memory(&shmid_client_ids, (void *)&shmaddr_client_ids,
+      get_shared_memory(&shmid_client_ids, (void *)&shmaddr_array_id_and_pid,
                         (1 + MAX_CLIENTS) * sizeof(int), FILE_TO_KEY_CLIENT_IDS,
                         NUMBER_TO_KEY_CLIENT_IDS) ||
       get_shared_memory(&shmid_names, (void *)&shmaddr_names,
@@ -70,13 +48,13 @@ int main() {
   while (have_not_id) {
     int id = 1;
     for (; id <= MAX_CLIENTS; id++) {
-      if (mypid == shmaddr_client_ids[id]) {
+      if (mypid == shmaddr_array_id_and_pid[id]) {
         my_client_id = id;
         have_not_id = 0;
         break;
       }
-      if (0 == shmaddr_client_ids[id]) {
-        shmaddr_client_ids[id] = mypid;
+      if (0 == shmaddr_array_id_and_pid[id]) {
+        shmaddr_array_id_and_pid[id] = mypid;
         // СПОСОБ РАЗРЕШЕНИЯ ГОНКИ без примитивов синхронизации:
         // возможен случай, что здесь другой клиент перезапишет эту ячейку
         // памяти, поэтому цикл повторяется, пока не удастся записать свой PID в
@@ -90,7 +68,6 @@ int main() {
                // занять это значение ID.
       printf("Sorry, no place for the client, try again later\n");
       exit(EXIT_SUCCESS);
-      //   break;
     }
   }
   input_name(name);
@@ -101,7 +78,7 @@ int main() {
   semop(mutex_sem_names, unlock, 1);
   //""""""""""""""""""""""" unlock """""""""""""""""""""""""""""""""
   int shmid_inner;
-  char *shmaddr_inner;  // общая память внутренних процессов клиента
+  char *shmaddr_inner;  // общая память внутренних процессов одного клиента
   res =
       make_shared_memory(&shmid_inner, (void *)&shmaddr_inner, CHAT_MSG_LEN + 2,
                          FILE_TO_KEY, NUMBER_TO_KEY + mypid);
@@ -116,11 +93,18 @@ int main() {
 
   pid_t pid = fork();
   if (0 == pid) {  // child process for input messages
-    kill(mypid, SIGUSR1);
-    res = broadcast_signal_i_typed_message(shmaddr_client_ids);
-    // error_handle(res, "Can't send broadcast signal\n");
+    res = broadcast_signal_to_all_clients(
+        shmaddr_array_id_and_pid);  // здесь не использую примитивы
+                                    // синхронизации, потому что не важно какой
+                                    // клиент пошлет сигналы всем главным
+                                    // процессам клиентов
+    for (unsigned p = 1; !res && p <= MAX_CLIENTS; p++) {
+      if (shmaddr_array_id_and_pid[p]) {
+        res = kill(shmaddr_array_id_and_pid[p], SIGUSR1);
+      }
+    }
     int repeat = 1;
-    while (repeat) {  // процесс для считывания  с клавиатуры и
+    while (!res && repeat) {  // процесс считывания  с клавиатуры и
       // отправки сообщения в общую память
       char str[MSG_LEN] = {0};
       unsigned indx = 0;
@@ -146,6 +130,7 @@ int main() {
               //"""""""""""""""""""" lock """"""""""""""""""""""""""""""""""""
               semop(mutex_sem_chat, lock, 2);
               send_message_to_chat(shmaddr_chat, name, str);
+              broadcast_signal_to_all_clients(shmaddr_array_id_and_pid);
               semop(mutex_sem_chat, unlock, 1);
               //""""""""""""""""""""""" unlock """""""""""""""""""""""""""""""""
             }
@@ -162,26 +147,18 @@ int main() {
         kill(mypid, SIGUSR1);
       }
       shmaddr_inner[0] = SYMBOL_EXIT;
-      kill(mypid, SIGUSR1);
-      res = broadcast_signal_i_typed_message(shmaddr_client_ids);
-      // error_handle(res, "Can't send broadcast signal\n");
-      // for (unsigned p = 1; p <= MAX_CLIENTS; p++) {
-      //   if (shmaddr_client_ids[p]) {
-      //     kill(shmaddr_client_ids[p], SIGUSR1);
-      //   }
-      // }
+      // res = broadcast_signal_to_all_clients(shmaddr_array_id_and_pid);
     }
   } else {  // pid!=0, main process
-      sigset_t set;
-  sigemptyset(&set);
-  sigaddset(&set, SIGUSR1);
-  int ret = sigprocmask(SIG_BLOCK, &set, NULL);
-  error_handle(ret < 0, "set blocking signal SIGUSR1\n");
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGUSR1);
+    int ret = sigprocmask(SIG_BLOCK, &set, NULL);
+    error_handle(ret < 0, "set blocking signal SIGUSR1\n");
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     int inputted = 0;
     WINDOW *the_window[3];
     Frame the_frame[3];
-    FILE *errors_log = freopen("errors.log", "w", stderr);
     curs_set(FALSE);
     start_color();
     keypad(stdscr, TRUE);
@@ -203,15 +180,9 @@ int main() {
     wrefresh(the_window[INPUT_WINDOW]);
     wmove(the_window[INPUT_WINDOW], 0, 0);
     wprintw(the_window[INPUT_WINDOW], "[%s]:\n", name);
-    // int repeat = 1;
     while (1) {
-      // int accessed_signal;
-      // sigwait(&set, &accessed_signal);
       if (g_chahged_screen_size) {
         g_chahged_screen_size = 0;
-        // process_change_screen_size2(the_window, the_frame, clientdata,
-        //                            &start_chat);
-        // sleep(1);
         process_change_screen_size3(the_window, the_frame);
       }
 
@@ -251,15 +222,8 @@ int main() {
       //"""""""""""""""""""" lock """"""""""""""""""""""""""""""""""""
       semop(mutex_sem_names, lock, 2);
       for (unsigned i = 0; i <= MAX_CLIENTS; i++) {
-        // strncpy(clientdata.other_names[i], "name name name", NAME_LEN);
         strncpy(clientdata.other_names[i], shmaddr_names + i * NAME_LEN,
                 NAME_LEN);
-        // if ('\0' == clientdata.other_names[i][0]) {
-        //   clientdata.size_names = i;
-        //   break;
-        // }
-
-        // strncpy(clientdata.other_names[i], shmaddr_names, NAME_LEN);
       }
       semop(mutex_sem_names, unlock, 1);
       //""""""""""""""""""""""" unlock """""""""""""""""""""""""""""""""
@@ -272,6 +236,7 @@ int main() {
     //"""""""""""""""""""" lock """"""""""""""""""""""""""""""""""""
     semop(mutex_sem_chat, lock, 2);
     send_message_to_chat(shmaddr_chat, name, "<<leaves this chat room>>");
+    broadcast_signal_to_all_clients(shmaddr_array_id_and_pid);
     semop(mutex_sem_chat, unlock, 1);
     //""""""""""""""""""""""" unlock """""""""""""""""""""""""""""""""
 
@@ -283,8 +248,8 @@ int main() {
     if (errors_log) fclose(errors_log);
     // при выходе удаляем свои данные из массива для установления ID
     // клиента, чтобы новые клиенты могли его использовать
-    shmaddr_client_ids[my_client_id] = 0;
-    shmdt(shmaddr_client_ids);
+    shmaddr_array_id_and_pid[my_client_id] = 0;
+    shmdt(shmaddr_array_id_and_pid);
     shmdt(shmaddr_names);
     shmdt(shmaddr_chat);
   }

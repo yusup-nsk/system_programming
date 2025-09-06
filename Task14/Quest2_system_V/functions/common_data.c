@@ -2,7 +2,9 @@
 
 void error_handle(int res, const char *msg) {
   if (res) {
-    perror(msg);
+    char str[CHAT_MSG_LEN];
+    sprintf(str, "(pid #%d): %s", getpid(), msg);
+    perror(str);
     exit(1);
   }
 }
