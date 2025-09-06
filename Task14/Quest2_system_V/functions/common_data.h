@@ -32,8 +32,8 @@
 #define NAME_LEN 30
 #define CHAT_MSG_LEN (NAME_LEN + 6 + MSG_LEN)
 
-#define MAX_CLIENTS 4
-#define MAX_NUM_CHAT 12
+#define MAX_CLIENTS 15
+#define MAX_NUM_CHAT 45
 #define SYMBOL_EXIT 'q'
 #define SYMBOL_SEND_MESSAGE '!'
 #define SYMBOL_WRITING_MESSAGE '_'

@@ -3,26 +3,7 @@
 #include "functions/common_data.h"
 
 int make_mutex_semaphore(int *mutex_sem, const char *file, int proj_id,
-                         int num_sems, int init_value) {
-  key_t key = ftok(file, proj_id);
-  if (-1 == key) {
-    perror("ftok in make semaphore");
-    return -1;
-  }
-  *mutex_sem = semget(key, num_sems, IPC_CREAT | 0660);
-  if (-1 == *mutex_sem) {
-    perror("semget in make semaphore");
-    return -1;
-  }
-  union semun sem_attributes;
-  sem_attributes.val = init_value;
-  int res = semctl(*mutex_sem, 0, SETVAL, sem_attributes);
-  if (-1 == res) {
-    perror("semctl in make semaphore");
-    return -1;
-  }
-  return 0;
-}
+                         int num_sems, int init_value);
 
 int main() {
   int shmid_for_client_ids, shmid_names, shmid_chat;
@@ -92,4 +73,26 @@ int main() {
   }
   printf("SERVER PROCESS #%d ENDS\n", getpid());
   exit(EXIT_SUCCESS);
+}
+
+int make_mutex_semaphore(int *mutex_sem, const char *file, int proj_id,
+                         int num_sems, int init_value) {
+  key_t key = ftok(file, proj_id);
+  if (-1 == key) {
+    perror("ftok in make semaphore");
+    return -1;
+  }
+  *mutex_sem = semget(key, num_sems, IPC_CREAT | 0660);
+  if (-1 == *mutex_sem) {
+    perror("semget in make semaphore");
+    return -1;
+  }
+  union semun sem_attributes;
+  sem_attributes.val = init_value;
+  int res = semctl(*mutex_sem, 0, SETVAL, sem_attributes);
+  if (-1 == res) {
+    perror("semctl in make semaphore");
+    return -1;
+  }
+  return 0;
 }

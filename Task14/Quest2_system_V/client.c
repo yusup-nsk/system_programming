@@ -147,7 +147,7 @@ int main() {
         kill(mypid, SIGUSR1);
       }
       shmaddr_inner[0] = SYMBOL_EXIT;
-      // res = broadcast_signal_to_all_clients(shmaddr_array_id_and_pid);
+      kill(mypid, SIGUSR1);
     }
   } else {  // pid!=0, main process
     sigset_t set;
@@ -155,7 +155,7 @@ int main() {
     sigaddset(&set, SIGUSR1);
     int ret = sigprocmask(SIG_BLOCK, &set, NULL);
     error_handle(ret < 0, "set blocking signal SIGUSR1\n");
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
     int inputted = 0;
     WINDOW *the_window[3];
     Frame the_frame[3];
@@ -168,9 +168,7 @@ int main() {
     init_pair(3, COLOR_WHITE, COLOR_BLACK);
     windows_initiation(the_window, the_frame);
     signal(SIGWINCH, sig_winch);
-
     unsigned start_chat = 0;
-    //   shmaddr_chat->overflowed ? (shmaddr_chat->last + 1) % MAX_NUM_CHAT : 0;
 
     wprintw(the_window[INPUT_WINDOW],
             "[%s]: Press <ESCAPE> to exit the CHAT ROOM "
@@ -183,9 +181,8 @@ int main() {
     while (1) {
       if (g_chahged_screen_size) {
         g_chahged_screen_size = 0;
-        process_change_screen_size3(the_window, the_frame);
+        process_change_screen_size(the_window, the_frame);
       }
-
       if (SYMBOL_EXIT == shmaddr_inner[0]) {
         break;
       }
@@ -227,8 +224,9 @@ int main() {
       }
       semop(mutex_sem_names, unlock, 1);
       //""""""""""""""""""""""" unlock """""""""""""""""""""""""""""""""
-      output_chat_and_names_windows2(the_window, clientdata, the_frame,
-                                     &start_chat);
+
+      output_chat_and_names_windows(the_window, clientdata, the_frame,
+                                    &start_chat);
       refresh();
       int accessed_signal;
       sigwait(&set, &accessed_signal);

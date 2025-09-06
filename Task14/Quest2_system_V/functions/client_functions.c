@@ -115,9 +115,60 @@ void send_message_to_chat(ChatData *shmaddr_chat, const char *name,
   shmaddr_chat->last %= MAX_NUM_CHAT;
 }
 
-void output_chat_and_names_windows2(WINDOW *the_window[3],
-                                    Data_of_client clientdata, Frame frame[3],
-                                    unsigned *start_chat) {
+void output_chat_and_names_windows(WINDOW *the_window[3],
+                                   Data_of_client clientdata, Frame frame[3],
+                                   unsigned *start_chat) {
+  unsigned y = 0;
+  int doitagain = 1;
+  while (doitagain) {
+    wmove(the_window[CHAT_WINDOW], 0, 0);
+    for (unsigned r = 0; r < frame[CHAT_WINDOW].rows; r++) {
+      wprintw(the_window[CHAT_WINDOW], "\n");
+    }
+    wmove(the_window[CHAT_WINDOW], 0, 0);
+    unsigned chatindex = *start_chat;
+    for (; chatindex < clientdata.size_chat; chatindex++) {
+      wprintw(the_window[CHAT_WINDOW], "%s", clientdata.chat[chatindex]);
+      y = getcury(the_window[CHAT_WINDOW]);
+      if (y >= frame[CHAT_WINDOW].rows - 2) {
+        *start_chat += 1;
+        break;
+      }
+      wprintw(the_window[CHAT_WINDOW], "\n");
+    }
+    if (chatindex <= clientdata.size_chat) {
+      doitagain = 0;
+    }
+  }
+  doitagain = 1;
+  unsigned start_names_index = 0;
+  while (doitagain) {
+    wmove(the_window[NAMES_WINDOW], 0, 0);
+    for (unsigned r = 0; r < frame[NAMES_WINDOW].rows; r++) {
+      wprintw(the_window[NAMES_WINDOW], "\n");
+    }
+    wmove(the_window[NAMES_WINDOW], 0, 0);
+    unsigned i = start_names_index;
+    for (; i < clientdata.size_names; ++i) {
+      wprintw(the_window[NAMES_WINDOW], " %s", clientdata.other_names[i]);
+      y = getcury(the_window[NAMES_WINDOW]);
+      if (y >= frame[NAMES_WINDOW].rows - 1) {
+        start_names_index++;
+        break;
+      }
+      wprintw(the_window[NAMES_WINDOW], "\n");
+    }
+    if (i <= clientdata.size_names) {
+      doitagain = 0;
+    }
+  }
+  wrefresh(the_window[0]);
+  wrefresh(the_window[1]);
+}
+
+/*void output_chat_and_names_windows(WINDOW *the_window[3],
+                                   Data_of_client clientdata, Frame frame[3],
+                                   unsigned *start_chat) {
   wmove(the_window[CHAT_WINDOW], 0, 0);
   for (unsigned r = 0; r < frame[CHAT_WINDOW].rows; r++) {
     wprintw(the_window[CHAT_WINDOW], "\n");
@@ -143,30 +194,30 @@ void output_chat_and_names_windows2(WINDOW *the_window[3],
 
   wrefresh(the_window[0]);
   wrefresh(the_window[1]);
-}
+}*/
 
-void process_change_screen_size2(WINDOW **window, Frame *frame,
-                                 Data_of_client clientdata,
-                                 unsigned *start_chat) {
-  for (unsigned i = 0; i < 3; ++i) {
-    delwin(window[i]);
-  }
-  erase();
-  refresh();
-  windows_initiation(window, frame);
-  for (unsigned i = 0; i < 3; ++i) {
-    werase(window[i]);
-  }
-  output_chat_and_names_windows2(window, clientdata, frame, start_chat);
-  wmove(window[INPUT_WINDOW], 0, 0);
-  wprintw(window[INPUT_WINDOW], "\n\n");
-  wmove(window[INPUT_WINDOW], 0, 0);
-  wprintw(window[INPUT_WINDOW], "[%s]:\n", clientdata.name);
-  wrefresh(window[INPUT_WINDOW]);
-  refresh();
-}
+// void process_change_screen_size2(WINDOW **window, Frame *frame,
+//                                  Data_of_client clientdata,
+//                                  unsigned *start_chat) {
+//   for (unsigned i = 0; i < 3; ++i) {
+//     delwin(window[i]);
+//   }
+//   erase();
+//   refresh();
+//   windows_initiation(window, frame);
+//   for (unsigned i = 0; i < 3; ++i) {
+//     werase(window[i]);
+//   }
+//   output_chat_and_names_windows2(window, clientdata, frame, start_chat);
+//   wmove(window[INPUT_WINDOW], 0, 0);
+//   wprintw(window[INPUT_WINDOW], "\n\n");
+//   wmove(window[INPUT_WINDOW], 0, 0);
+//   wprintw(window[INPUT_WINDOW], "[%s]:\n", clientdata.name);
+//   wrefresh(window[INPUT_WINDOW]);
+//   refresh();
+// }
 
-void process_change_screen_size3(WINDOW **window, Frame *frame) {
+void process_change_screen_size(WINDOW **window, Frame *frame) {
   for (unsigned i = 0; i < 3; ++i) {
     delwin(window[i]);
   }

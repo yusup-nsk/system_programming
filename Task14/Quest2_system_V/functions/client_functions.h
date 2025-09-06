@@ -48,23 +48,23 @@ void windows_initiation(WINDOW *the_window[3], Frame the_frame[3]);
 // void output_chat_and_names_windows(WINDOW *the_window[3],
 //                                    Data_of_client clientdata, Frame frame[3],
 //                                    unsigned *start_chat);
-void process_change_screen_size2(WINDOW **window, Frame *frame,
-                                 Data_of_client clientdata,
-                                 unsigned *start_chat);
+// void process_change_screen_size2(WINDOW **window, Frame *frame,
+//                                  Data_of_client clientdata,
+//                                  unsigned *start_chat);
 
 void input_name(char *name);
 
 int get_shared_memory(int *shmid, void **shmaddr, unsigned size,
                       char *file_to_key, unsigned number_to_key);
 
-void output_chat_and_names_windows2(WINDOW *the_window[3],
-                                    Data_of_client clientdata, Frame frame[3],
-                                    unsigned *start_chat);
+void output_chat_and_names_windows(WINDOW *the_window[3],
+                                   Data_of_client clientdata, Frame frame[3],
+                                   unsigned *start_chat);
 
 void send_message_to_chat(ChatData *shmaddr_chat, const char *name,
                           const char *message);
 int get_mutex_semaphore(int *mutex_sem, const char *file, int proj_id);
 
-void process_change_screen_size3(WINDOW **window, Frame *frame);
+void process_change_screen_size(WINDOW **window, Frame *frame);
 
 #endif
