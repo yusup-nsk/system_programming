@@ -8,8 +8,6 @@ EXECUTABLE2 := client
 COMMON_DATA_SERVER_AND_CLIENT := functions/common_data.c
 
 all: exe1 exe2 
-	@make format
-# 	@printf "\nServer programm is running here.\nRun './client' in another terminal\n\n"
 	@./$(EXECUTABLE1)
 
 exe1:
@@ -30,4 +28,4 @@ cleano:
 clean: cleano
 	rm -f $(EXECUTABLE1) $(EXECUTABLE2) *.log
 
-.PHONY: all run1 run2 exe1 exe2 server client clean exe format cleano 
+.PHONY: all exe1 exe2 clean format cleano 

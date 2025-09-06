@@ -3,6 +3,7 @@
 #define _COMMON_DATA_H_
 
 #include <errno.h>
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,8 +14,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-//
-#include <ncurses.h>
 
 #define FILE_TO_KEY "Makefile"
 #define FILE_TO_KEY_CLIENT_IDS "server.c"

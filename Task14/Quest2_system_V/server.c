@@ -1,5 +1,3 @@
-// #include "server.h"
-
 #include "functions/common_data.h"
 
 int make_mutex_semaphore(int *mutex_sem, const char *file, int proj_id,
@@ -31,7 +29,8 @@ int main() {
   shmaddress_client_ids[0] = 1;
   strncpy(shmaddr_names, "ONLINE:", MSG_LEN);
   pid_t process_read_input_pid = fork();
-  if (0 == process_read_input_pid) {
+  if (0 == process_read_input_pid) {  // процесс только для организации выхода
+                                      // из программы по нажатию < ESCAPE >
     initscr();
     cbreak();
     keypad(stdscr, TRUE);
@@ -46,24 +45,7 @@ int main() {
     endwin();
   } else {
     wait(NULL);
-    printf("\nAt the end. IN SHARED MEMORY: \n");
-    for (int i = 0; i < MAX_NUM_CHAT; i++) {
-      printf("-%u-%u---%d--%s--  \n", shmaddr_chat->last, shmaddr_chat->last, i,
-             shmaddr_chat->chat[i]);
-    }
-
-    for (int i = 0; i < (1 + MAX_CLIENTS); i++) {
-      if (shmaddress_client_ids[i])
-        printf("%d: %d   ", i, shmaddress_client_ids[i]);
-    }
-    printf("\nNAMES:\n");
-    for (int i = 0; i <= MAX_CLIENTS; i++) {
-      if (shmaddress_client_ids[i])
-        printf("id=%d;   pid=%d;   name:%s\n", i, shmaddress_client_ids[i],
-               shmaddr_names + i * NAME_LEN);
-    }
     //===================================================
-    printf("shmids: %d %d %d\n", shmid_for_client_ids, shmid_names, shmid_chat);
     shmctl(shmid_for_client_ids, IPC_RMID, NULL);
     shmctl(shmid_names, IPC_RMID, NULL);
     shmctl(shmid_chat, IPC_RMID, NULL);
@@ -71,7 +53,6 @@ int main() {
     semctl(mutex_sem_chat, 0, IPC_RMID);
     //===================================================
   }
-  printf("SERVER PROCESS #%d ENDS\n", getpid());
   exit(EXIT_SUCCESS);
 }
 
