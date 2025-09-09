@@ -1,7 +1,7 @@
 #include "common_data.h"
 int main() {
   int sockfd;
-  int n;
+  int len;
   char buffer[BUFFER_SIZE] = {"Hello!\0"};
   struct sockaddr_un servaddr, cliaddr;
   socklen_t socklen;
@@ -25,12 +25,12 @@ int main() {
     close(sockfd);
     handle_error("sendto");
   }
-  if ((n = recvfrom(sockfd, buffer, BUFFER_SIZE, 0,
+  if ((len = recvfrom(sockfd, buffer, BUFFER_SIZE, 0,
                     (struct sockaddr *)&servaddr, &socklen)) < 0) {
     close(sockfd);
     handle_error("recvfrom");
   }
-  buffer[n] = 0;
+  buffer[len] = 0;
   printf("\033[42m%s\033[0m\n", buffer);
 
   close(sockfd);

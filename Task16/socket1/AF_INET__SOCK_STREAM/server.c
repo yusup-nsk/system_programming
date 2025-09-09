@@ -31,10 +31,7 @@ int main() {
     close(sockfd);
     handle_error("accept");
   }
-//   char ipaddr[100];
-//   strcpy(ipaddr,inet_ntoa((cliaddr.sin_addr)));
-//   printf("client addres is %s\n", ipaddr);
-
+  
   len = read(newsockfd, buffer, BUFFER_SIZE);
     if (len < 0) {
     close(sockfd);
