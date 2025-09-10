@@ -4,7 +4,7 @@ int main() {
   int sockfd;
   int len;
   char buffer[BUFFER_SIZE] = {"Hello!\0"};
-  struct sockaddr_in servaddr; 
+  struct sockaddr_in servaddr;
 
   if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     handle_error("socket");
@@ -23,17 +23,17 @@ int main() {
     handle_error("connect");
   }
 
-  if ((len = write(sockfd, buffer, strlen(buffer) + 1)) < 0) {
+  if ((len = send(sockfd, buffer, strlen(buffer) + 1, 0)) < 0) {
     close(sockfd);
-    handle_error("Can\'t write");
+    handle_error("Can\'t send");
   }
-  if ((len = read(sockfd, buffer, BUFFER_SIZE)) < 0) {
+  if ((len = recv(sockfd, buffer, BUFFER_SIZE, 0)) < 0) {
     close(sockfd);
-    handle_error("Can\'t read");
+    handle_error("Can\'t recieve");
   }
   buffer[len] = '\0';
   printf("\033[42m%s\033[0m\n", buffer);
 
   close(sockfd);
-   exit(EXIT_SUCCESS);
+  exit(EXIT_SUCCESS);
 }

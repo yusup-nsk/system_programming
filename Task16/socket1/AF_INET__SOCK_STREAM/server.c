@@ -9,7 +9,7 @@ int main() {
   int newsockfd;
 
   if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-   handle_error("socket");
+    handle_error("socket");
   }
 
   memset(&servaddr, 0, sizeof(servaddr));
@@ -31,23 +31,23 @@ int main() {
     close(sockfd);
     handle_error("accept");
   }
-  
-  len = read(newsockfd, buffer, BUFFER_SIZE);
-    if (len < 0) {
+
+  len = recv(newsockfd, buffer, BUFFER_SIZE, 0);
+  if (len < 0) {
     close(sockfd);
     close(newsockfd);
-    handle_error("read");
+    handle_error("recieve");
   }
-    buffer[len] = '\0';
-    printf("\033[36m%s\033[0m\n", buffer);
+  buffer[len] = '\0';
+  printf("\033[36m%s\033[0m\n", buffer);
 
-    strncpy(buffer, "Hi!", 4);
-    if ((write(newsockfd, buffer, strlen(buffer) + 1)) < 0) {
-      close(sockfd);
-      close(newsockfd);
-      handle_error("write");
-    }
+  strncpy(buffer, "Hi!", 4);
+  if ((send(newsockfd, buffer, strlen(buffer) + 1, 0)) < 0) {
+    close(sockfd);
+    close(newsockfd);
+    handle_error("send");
+  }
   close(newsockfd);
   close(sockfd);
-   exit(EXIT_SUCCESS);
+  exit(EXIT_SUCCESS);
 }
