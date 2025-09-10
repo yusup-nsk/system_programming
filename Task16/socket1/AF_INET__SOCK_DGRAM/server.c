@@ -36,5 +36,5 @@ int main() {
     handle_error("sendto");
   }
 
-   exit(EXIT_SUCCESS);
+  exit(EXIT_SUCCESS);
 }
